@@ -1,7 +1,7 @@
 # Личный проект «Readme»
 
 * Студент: [Арсений Спирин](https://up.htmlacademy.ru/php/12/user/866299).
-* Наставник: `Неизвестно`.
+* Наставник: [Сергей Шершнев](https://htmlacademy.ru/profile/shv_sergey).
 
 ---
 
