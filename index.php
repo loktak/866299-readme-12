@@ -38,8 +38,67 @@ $posts = [
         'post_content' => 'www.htmlacademy.ru',
         'author' => 'Владик',
         'avatar' => 'userpic.jpg'
+    ],
+    [
+        'type' => 'post-text',
+        'title' => 'Пишем первую функцию',
+        'post_content' => 'Чтобы карточки оставались компактными и не занимали слишком много места размер содержимого надо принудительно ограничивать. Для фотографий и видео это можно сделать через CSS, для цитат и ссылок есть ограничение длины при создании поста. Остаётся текстовый контент. Его длина никак не ограничивается в момент создания, а т. к. пользователи могут писать очень длинные тексты, необходимо предусмотреть обрезание текста до приемлемой длины при показе карточки поста на странице популярного.',
+        'author' => 'Владик',
+        'avatar' => 'userpic.jpg'
     ]
 ];
+
+/** 
+*The function cuts the text and adds a link to the full text if required 
+
+*The function takes two values: text ($text) and the maximum number of symbols($symbols).
+*1.Splitting the text into separate words and entering them in the $words array
+*   The "strlen" function counts the number of characters in each word and sums them in the variable $text_length
+*   Each calculated value is added to the $cropped_text array
+*   The loop stops working if $text_length >= $symbols
+*2.Using the "implode" function, we get the cropped text from the $cropping_text array and write it to the $text variable
+*3.The $post_text variable is responsible for displaying text in HTML code. In it, we know the tags and the actual text itself from the $text variable
+*4.The $post_full_text_link variable is responsible for displaying a link to the full text, if it was cropped. We enter the html code of the link in it
+*5 Entering a condition
+*   If the value of $text_length is greater than $symbols, add a colon at the end of the line and a link from $post_full_text_link to the entire text.
+*   If the value of $text_length is less than $symbols, just print the $post_text variable
+
+
+* @param string $text
+* @param integer $symbols
+* @author Arseny Spirin <spirinars@ya.ru>
+* @copyright 2016 Wikipedia
+*/
+function crop_text(
+    $text, $symbols
+    ) {     
+    
+    $words = explode(" ", $text);  
+
+    foreach ($words as $word) {
+        $text_lenght = $text_lenght + strlen($word);
+        $new_word = $word; //почему нельзя сразу написать $cropped_text[] = $word;, он добавляет только как нулевой элемент последнее слово?
+        $cropped_text[] = $new_word;
+        if ($text_lenght >= $symbols) {
+        break;
+        }  
+    };
+    
+    $text = implode(" ", $cropped_text);
+    
+    $post_text = "<p>". $text. "</p>";
+    $post_full_text_link = '<a class="post-text__more-link" "href="#">Читать далее</a>';
+
+    if ($text_lenght > $symbols) {
+        $text .= "...";
+        $post_text = "<p>". $text. "</p>". $post_full_text_link;
+        print($post_text);
+    }
+    else {
+        print($post_text);
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -240,24 +299,24 @@ $posts = [
             </div>
         </div>
         <div class="popular__posts">
-            <?php foreach ($posts as $post => $val): ?>                
-            <article class="popular__post post <?=$val['type'] ?>">
+            <?php foreach ($posts as $post): ?>                
+            <article class="popular__post post <?=$post['type'] ?>">
                 <header class="post__header">
-                    <h2><?=$val['title'] ?></h2>
+                    <h2><?=$post['title'] ?></h2>
                 </header>
                 <div class="post__main">
-                <?php if ($val['type'] === 'post-quote' ): ?>
+                    <?php if ($post['type'] === 'post-quote' ): ?>
                     <blockquote>
                     <p>
-                        <?=$val['post_content'] ?>
+                        <?=$post['post_content'] ?>
                     </p>
                     <cite>Неизвестный Автор</cite>
-                </blockquote>
-                <?php elseif ($val['type'] === 'post-photo' ): ?>
+                    </blockquote>
+                    <?php elseif ($post['type'] === 'post-photo'): ?>
                     <div class="post-photo__image-wrapper">
-                    <img src="img/<?=$val['post_content'] ?>" alt="Фото от пользователя" width="360" height="240">
-                </div>
-                <?php elseif ($val['type'] === 'post-link' ): ?>
+                    <img src="img/<?=$post['post_content'] ?>" alt="Фото от пользователя" width="360" height="240">
+                    </div>
+                    <?php elseif ($post['type'] === 'post-link' ): ?>
                     <div class="post-link__wrapper">
                     <a class="post-link__external" href="http://" title="Перейти по ссылке">
                         <div class="post-link__info-wrapper">
@@ -265,14 +324,14 @@ $posts = [
                                 <img src="https://www.google.com/s2/favicons?domain=vitadental.ru" alt="Иконка">
                             </div>
                             <div class="post-link__info">
-                                <h3><?=$val['title'] ?></h3>
+                                <h3><?=$post['title'] ?></h3>
                             </div>
                         </div>
-                        <span><?=$val['post_content'] ?></span>
+                        <span><?=$post['post_content'] ?></span>
                     </a>
                 </div>
                 <?php else: ?>
-                    <p><?=$val['post_content'] ?></p>
+                    <?php crop_text($post['post_content'], 300) ?>
                 <?php endif; ?>
                 </div>
                 <footer class="post__footer">
@@ -280,10 +339,10 @@ $posts = [
                         <a class="post__author-link" href="#" title="Автор">
                             <div class="post__avatar-wrapper">
                                 <!--укажите путь к файлу аватара-->
-                                <img class="post__author-avatar" src="img/<?=$val['avatar'] ?>" alt="Аватар пользователя">
+                                <img class="post__author-avatar" src="img/<?=$post['avatar'] ?>" alt="Аватар пользователя">
                             </div>
                             <div class="post__info">
-                                <b class="post__author-name"><?=$val['author'] ?></b>
+                                <b class="post__author-name"><?=$post['author'] ?></b>
                                 <time class="post__time" datetime="">дата</time>
                             </div>
                         </a>
@@ -312,7 +371,7 @@ $posts = [
                 </footer>
             </article>
             <?php endforeach; ?>
-        </div>-->
+        </div>
     </div>
 </section>
 
