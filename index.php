@@ -65,32 +65,30 @@ $posts = [
 
 
 * @param string $text
-* @param integer $symbols
+* @param int $symbols
 * @author Arseny Spirin <spirinars@ya.ru>
-* @copyright 2016 Wikipedia
 */
-function crop_text(
-    $text, $symbols
-    ) {     
+function crop_text( $text, $symbols = 300) {     
     
     $words = explode(" ", $text);  
-
+    
+    $text_lenght = 0;
+    
     foreach ($words as $word) {
         $text_lenght = $text_lenght + strlen($word);
-        $new_word = $word; //почему нельзя сразу написать $cropped_text[] = $word;, он добавляет только как нулевой элемент последнее слово?
-        $cropped_text[] = $new_word;
+        $cropped_text[] = $word; // изначально я так и писал, но по какой-то причине, выводилось в массиве только последнее слово из всего текста. Вероятно ошибка была где-то еще.
         if ($text_lenght >= $symbols) {
-        break;
+            break;
         }  
     };
-    
+
     $text = implode(" ", $cropped_text);
     
     $post_text = "<p>". $text. "</p>";
-    $post_full_text_link = '<a class="post-text__more-link" "href="#">Читать далее</a>';
 
     if ($text_lenght > $symbols) {
         $text .= "...";
+        $post_full_text_link = '<a class="post-text__more-link" "href="#">Читать далее</a>';
         $post_text = "<p>". $text. "</p>". $post_full_text_link;
         print($post_text);
     }
@@ -331,7 +329,7 @@ function crop_text(
                     </a>
                 </div>
                 <?php else: ?>
-                    <?php crop_text($post['post_content'], 300) ?>
+                    <?php crop_text($post['post_content']) ?>
                 <?php endif; ?>
                 </div>
                 <footer class="post__footer">
