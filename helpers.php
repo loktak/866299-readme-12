@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Проверяет переданную дату на соответствие формату 'ГГГГ-ММ-ДД'
  *
@@ -102,7 +103,7 @@ function db_get_prepare_stmt($link, $sql, $data = [])
  */
 function get_noun_plural_form(int $number, string $one, string $two, string $many): string
 {
-    $number = (int)$number;
+    $number = (int) $number;
     $mod10 = $number % 10;
     $mod100 = $number % 100;
 
@@ -122,30 +123,6 @@ function get_noun_plural_form(int $number, string $one, string $two, string $man
         default:
             return $many;
     }
-}
-
-/**
- * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
- * @param string $name Путь к файлу шаблона относительно папки templates
- * @param array $data Ассоциативный массив с данными для шаблона
- * @return string Итоговый HTML
- */
-function include_template($name, array $data = [])
-{
-    $name = 'templates/' . $name;
-    $result = '';
-
-    if (!is_readable($name)) {
-        return $result;
-    }
-
-    ob_start();
-    extract($data);
-    require $name;
-
-    $result = ob_get_clean();
-
-    return $result;
 }
 
 /**
