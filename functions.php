@@ -47,7 +47,7 @@ function crop_text($text, $symbols = 300)
     $text_lenght = 0;
 
     foreach ($words as $word) {
-        $text_lenght = $text_lenght + strlen($word);
+        $text_lenght = $text_lenght + mb_strlen($word);
         $cropped_text[] = $word; // изначально я так и писал, но по какой-то причине, выводилось в массиве только последнее слово из всего текста. Вероятно ошибка была где-то еще.
         if ($text_lenght >= $symbols) {
             break;
@@ -80,14 +80,10 @@ function anti_xss($user_content)
     return htmlspecialchars($user_content, ENT_QUOTES);
 }
 
-date_default_timezone_set("Europe/Moscow");
-setlocale(LC_ALL, 'ru_RU');
-
-
 /** 
  *The function determines how much time has passed since the post was created and outputs the corresponding value
  *
- * @param date $post_upload_time
+ * @param Datetime $post_upload_time
  * @return string
  * @author Arseny Spirin <spirinars@ya.ru>
  */
@@ -124,7 +120,7 @@ function time_ago($post_upload_time)
         $ago = 'меньше минуты назад';
     }
 
-    echo ($ago);
+    return $ago;
 }
 
 /** 
