@@ -6,7 +6,7 @@ CREATE TABLE users (
 id INT AUTO_INCREMENT PRIMARY KEY,
 registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 email VARCHAR(128) NOT NULL UNIQUE,
-user_name VARCHAR(128) NOT NULL UNIQUE,
+login VARCHAR(128) NOT NULL UNIQUE,
 password VARCHAR(128) NOT NULL,
 avatar VARCHAR(128)
 );
@@ -14,13 +14,13 @@ avatar VARCHAR(128)
 CREATE TABLE posts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   post_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  title VARCHAR(128) UNIQUE,
+  title VARCHAR(128),
   content_text VARCHAR(512),
   quote_author VARCHAR(128),
   img VARCHAR(128),
   video VARCHAR(128),
   link VARCHAR(256),
-  views INT,
+  views INT UNSIGNED,
   
   user_id INT,
   type_id INT
@@ -42,11 +42,11 @@ CREATE TABLE likes (
   post_id INT
 );
 
-CREATE TABLE subs (
+CREATE TABLE subscribtions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   
-  userwho_id INT,
-  postto_id INT
+  user_id INT,
+  userto_id INT
 );
 
 CREATE TABLE messages (
@@ -54,13 +54,13 @@ CREATE TABLE messages (
   comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   content VARCHAR(512),
   
-  userwho_id INT,
-  postto_id INT
+  user_id INT,
+  userto_id INT
 );
 
-CREATE TABLE hashs (
+CREATE TABLE hashtags (
 id INT AUTO_INCREMENT PRIMARY KEY,
-hash VARCHAR(128)
+title VARCHAR(128)
 );
 
 CREATE TABLE content_type (
@@ -69,5 +69,5 @@ type_name VARCHAR(128) NOT NULL,
 icon_type VARCHAR(128)
 );
 
-CREATE INDEX c_user ON users(user_name);
+CREATE INDEX c_login ON users(login);
 CREATE INDEX c_title ON posts(title);
