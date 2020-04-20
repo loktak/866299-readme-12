@@ -5,20 +5,22 @@ $is_auth = rand(0, 1);
 $user_name = 'Арсений'; // укажите здесь ваше имя
 
 require_once('functions.php');
-require_once('data.php');
 require_once('helpers.php');
 
-$page_content = include_template(
-    'main.php',
-    ['posts' => $posts,]
-);
+$link = database_conecting ('127.0.0.1', 'root', 'root', 'readme');
+
+$page_content = include_template('main.php',[
+    'posts' => popular_posts($link),
+    'types' => posts_categories($link)
+]);
 
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme Главная',
     'is_auth' => $is_auth,
-    'user_name' => $user_name,
-
+    'user_name' => $user_name
 ]);
+
+$types = posts_categories($link);
 
 print($layout_content);
