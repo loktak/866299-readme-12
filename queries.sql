@@ -17,10 +17,10 @@ SET email = 'spirinars@yandex.ru', login = 'Арсений', password = 'parol';
 */
 INSERT INTO content_type (id, type_name, icon_type) 
 VALUES
-(1, 'Текст', 'text'),
-(2, 'Цитата', 'quote'),
-(3, 'Картинка', 'photo'),
-(4, 'Видео', 'video'),
+(1, 'Картинка', 'photo'),
+(2, 'Видео', 'video'),
+(3, 'Текст', 'text'),
+(4, 'Цитата', 'quote'),
 (5, 'Ссылка', 'link');
 
 
@@ -29,7 +29,7 @@ VALUES
 */
 INSERT INTO posts (title, content_text, quote_author, views, user_id, type_id)
 VALUES 
-('Цитата', 'Мы в жизни любим только раз, а после ищем лишь похожих', 'Неизвестный автор', 100500, 1), (SELECT id FROM content_type WHERE type_name = 'Цитата'));
+('Цитата', 'Мы в жизни любим только раз, а после ищем лишь похожих', 'Неизвестный автор', 100500, 1, (SELECT id FROM content_type WHERE type_name = 'Цитата'));
 
 INSERT INTO posts (title, img, views, user_id, type_id)
 VALUES 
@@ -44,14 +44,18 @@ INSERT INTO posts (title, link, views, user_id, type_id)
 VALUES
 ('Лучшие курсы', 'www.htmlacademy.ru', 1000000, 2, (SELECT id FROM content_type WHERE type_name = 'Ссылка'));
 
+INSERT INTO posts (title, video, views, user_id, type_id)
+VALUES
+('Зацени видос', 'https://www.youtube.com/watch?v=eP-vjex0Wfw&list=PLQJNT2fdCJnhoGNGl-kIVbxiiyJRZOmZZ&index=11', 1200, 4, (SELECT id FROM content_type WHERE type_name = 'Видео'));
+
 /* 
 Добавление комментариев к постам
 */
 INSERT INTO comments (content, user_id, post_id)
 VALUES
-('Так себе сериал, так и не смог себя заставить посмотреть', 4, 4,
-('Согласен полностью с предыдущим оратором!', 4, 5,
-('Надо будет попробовать', 1, 5;
+('Так себе сериал, так и не смог себя заставить посмотреть', 4, 4),
+('Согласен полностью с предыдущим оратором!', 4, 5),
+('Надо будет попробовать', 1, 5);
 
 
 /*

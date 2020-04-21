@@ -7,7 +7,7 @@ $user_name = 'Арсений'; // укажите здесь ваше имя
 require_once('functions.php');
 require_once('helpers.php');
 
-$link = database_conecting ('127.0.0.1', 'root', 'root', 'readme');
+$link = database_conecting ('localhost', 'root', 'root', 'readme');
 
 $page_content = include_template('main.php',[
     'posts' => popular_posts($link),

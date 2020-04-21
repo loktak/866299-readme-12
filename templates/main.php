@@ -41,14 +41,14 @@
                     </a>
                 </li>
                 <?php foreach ($types as $type) : ?>
-                <li class="popular__filters-item filters__item">
-                    <a class="filters__button filters__button--<?= ($type['icon_type']) ?> button" href="#">
-                        <span class="visually-hidden"><?= ($type['type_namegit']) ?></span>
-                        <svg class="filters__icon" width="22" height="18">
-                            <use xlink:href="#icon-filter-<?= ($type['icon_type']) ?>"></use>
-                        </svg>
-                    </a>
-                </li>
+                    <li class="popular__filters-item filters__item">
+                        <a class="filters__button filters__button--<?= ($type['icon_type']) ?> button" href="#">
+                            <span class="visually-hidden"><?= ($type['type_name']) ?></span>
+                            <svg class="filters__icon" width="22" height="18">
+                                <use xlink:href="#icon-filter-<?= ($type['icon_type']) ?>"></use>
+                            </svg>
+                        </a>
+                    </li>
                 <?php endforeach ?>
             </ul>
         </div>
@@ -85,6 +85,18 @@
                                 <span><?= anti_xss($post['link']) ?></span>
                             </a>
                         </div>
+                    <?php elseif ($post['icon_type'] === 'video') : ?>
+                        <div class="post-video__block">
+                            <div class="post-video__preview">
+                                <img src="img/coast-medium.jpg" alt="Превью к видео" width="360" height="188">
+                            </div>
+                            <a href="<?= htmlspecialchars($post['video']) ?>" class="post-video__play-big button" target="_blank">
+                                <svg class="post-video__play-big-icon" width="14" height="14">
+                                    <use xlink:href="#icon-video-play-big"></use>
+                                </svg>
+                                <span class="visually-hidden">Запустить проигрыватель</span>
+                            </a>
+                        </div>
                     <?php else : ?>
                         <?php crop_text(anti_xss($post['content_text'])) ?>
                     <?php endif; ?>
@@ -97,7 +109,7 @@
                                 <img class="post__author-avatar" src="img/<?= $post['avatar'] ?>" alt="Аватар пользователя">
                             </div>
                             <div class="post__info">
-                                <b class="post__author-name"><?= anti_xss($post['login']) ?></b>
+                                <b class="post__author-name"><?= anti_xss($post['author_login']) ?></b>
                                 <?php $post_date = get_post_time($index); ?>
                                 <time class="post__time" title="<?= $post_date->format('d.m.Y H:i') ?>" datetime="<?= $post_date->format('Y-m-d H:i:s') ?>"><?= time_ago($post_date) ?></time>
                             </div>

@@ -154,12 +154,12 @@ function get_post_time($index)
 * @param string $password Пароль пользователя БД
 * @param string $database Имя БД
 *
-*@return object(mysqli)
+* @return mysqli
 */
 function database_conecting ($host, $user, $password, $database) {
     $link = mysqli_connect($host, $user, $password, $database);
-    if ($link == false) {
-        print("Ошибка подключения: " . mysqli_connect_error());
+    if ($link === false) {
+        die("Ошибка подключения: " . mysqli_connect_error());
     }
     else {
         mysqli_set_charset($link, "utf8");
@@ -169,7 +169,7 @@ function database_conecting ($host, $user, $password, $database) {
 
 /**
  * Функция берет данные из запроса sql и возвращает двумерный массив
- * @param object (mysqli)  //ЭТО ПРАВИЛЬНО? Я НАШЕЛ ТАКУЮ ШТУКУ В ИНТЕРЕНТЕ И ТАК КАК Я НЕ ЗНАЮ ЧТО НАДО НАПИСАТЬ НАПИСАЛ ЭТО.
+ * @param mysqli
  * @param string $sql запрос в базу данных
  * 
  * @return array двумерный массив данных
@@ -178,7 +178,7 @@ function get_data($link, $sql) {
     $result = mysqli_query($link, $sql);
     if (!$result) {
         $error = mysqli_error($link); 
-        print("Ошибка MySQL: " . $error);
+        die("Ошибка MySQL: " . $error);
     }
     else {
         $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -188,24 +188,24 @@ function get_data($link, $sql) {
  
  /**
   * Функция вызывает список постов сортированных по популярности с указанием автора поста на главную страницу
-  * @param object (mysqli)
+  * @param mysqli
   * 
   * @return array двумерный массив данных
 */
 function popular_posts($link) {
     $sql = '
-    SELECT p.*, ct.icon_type, u.avatar, u.login
+    SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login
     FROM posts p 
     JOIN users u ON p.user_id = u.id
     JOIN content_type ct ON p.type_id = ct.id
     ORDER BY p.views DESC LIMIT 6
-    ';
+    '; // значит последний LIMIT 6 не нужен? Ну если мы не ограничиваем колличество постов?
     return get_data($link, $sql);
 }
 
 /**
   * Функция вызывает список категорий
-  * @param object (mysqli)
+  * @param mysqli
   * 
   * @return array двумерный массив данных
 */
