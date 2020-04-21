@@ -40,68 +40,38 @@
                         <span>Все</span>
                     </a>
                 </li>
-                <li class="popular__filters-item filters__item">
-                    <a class="filters__button filters__button--photo button" href="#">
-                        <span class="visually-hidden">Фото</span>
-                        <svg class="filters__icon" width="22" height="18">
-                            <use xlink:href="#icon-filter-photo"></use>
-                        </svg>
-                    </a>
-                </li>
-                <li class="popular__filters-item filters__item">
-                    <a class="filters__button filters__button--video button" href="#">
-                        <span class="visually-hidden">Видео</span>
-                        <svg class="filters__icon" width="24" height="16">
-                            <use xlink:href="#icon-filter-video"></use>
-                        </svg>
-                    </a>
-                </li>
-                <li class="popular__filters-item filters__item">
-                    <a class="filters__button filters__button--text button" href="#">
-                        <span class="visually-hidden">Текст</span>
-                        <svg class="filters__icon" width="20" height="21">
-                            <use xlink:href="#icon-filter-text"></use>
-                        </svg>
-                    </a>
-                </li>
-                <li class="popular__filters-item filters__item">
-                    <a class="filters__button filters__button--quote button" href="#">
-                        <span class="visually-hidden">Цитата</span>
-                        <svg class="filters__icon" width="21" height="20">
-                            <use xlink:href="#icon-filter-quote"></use>
-                        </svg>
-                    </a>
-                </li>
-                <li class="popular__filters-item filters__item">
-                    <a class="filters__button filters__button--link button" href="#">
-                        <span class="visually-hidden">Ссылка</span>
-                        <svg class="filters__icon" width="21" height="18">
-                            <use xlink:href="#icon-filter-link"></use>
-                        </svg>
-                    </a>
-                </li>
+                <?php foreach ($types as $type) : ?>
+                    <li class="popular__filters-item filters__item">
+                        <a class="filters__button filters__button--<?= ($type['icon_type']) ?> button" href="#">
+                            <span class="visually-hidden"><?= ($type['type_name']) ?></span>
+                            <svg class="filters__icon" width="22" height="18">
+                                <use xlink:href="#icon-filter-<?= ($type['icon_type']) ?>"></use>
+                            </svg>
+                        </a>
+                    </li>
+                <?php endforeach ?>
             </ul>
         </div>
     </div>
     <div class="popular__posts">
         <?php foreach ($posts as $index => $post) : ?>
-            <article class="popular__post post <?= $post['type'] ?>">
+            <article class="popular__post post post-<?= $post['icon_type'] ?>">
                 <header class="post__header">
                     <h2><?= $post['title'] ?></h2>
                 </header>
                 <div class="post__main">
-                    <?php if ($post['type'] === 'post-quote') : ?>
+                    <?php if ($post['icon_type'] === 'quote') : ?>
                         <blockquote>
                             <p>
-                                <?= anti_xss($post['post_content']) ?>
+                                <?= anti_xss($post['content_text']) ?>
                             </p>
-                            <cite>Неизвестный Автор</cite>
+                            <cite><?= anti_xss($post['quote_author']) ?></cite>
                         </blockquote>
-                    <?php elseif ($post['type'] === 'post-photo') : ?>
+                    <?php elseif ($post['icon_type'] === 'photo') : ?>
                         <div class="post-photo__image-wrapper">
-                            <img src="img/<?= anti_xss($post['post_content']) ?>" alt="Фото от пользователя" width="360" height="240">
+                            <img src="img/<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
                         </div>
-                    <?php elseif ($post['type'] === 'post-link') : ?>
+                    <?php elseif ($post['icon_type'] === 'link') : ?>
                         <div class="post-link__wrapper">
                             <a class="post-link__external" href="http://" title="Перейти по ссылке">
                                 <div class="post-link__info-wrapper">
@@ -112,11 +82,23 @@
                                         <h3><?= anti_xss($post['title']) ?></h3>
                                     </div>
                                 </div>
-                                <span><?= anti_xss($post['post_content']) ?></span>
+                                <span><?= anti_xss($post['link']) ?></span>
+                            </a>
+                        </div>
+                    <?php elseif ($post['icon_type'] === 'video') : ?>
+                        <div class="post-video__block">
+                            <div class="post-video__preview">
+                                <img src="img/coast-medium.jpg" alt="Превью к видео" width="360" height="188">
+                            </div>
+                            <a href="<?= htmlspecialchars($post['video']) ?>" class="post-video__play-big button" target="_blank">
+                                <svg class="post-video__play-big-icon" width="14" height="14">
+                                    <use xlink:href="#icon-video-play-big"></use>
+                                </svg>
+                                <span class="visually-hidden">Запустить проигрыватель</span>
                             </a>
                         </div>
                     <?php else : ?>
-                        <?php crop_text(anti_xss($post['post_content'])) ?>
+                        <?php crop_text(anti_xss($post['content_text'])) ?>
                     <?php endif; ?>
                 </div>
                 <footer class="post__footer">
@@ -127,7 +109,7 @@
                                 <img class="post__author-avatar" src="img/<?= $post['avatar'] ?>" alt="Аватар пользователя">
                             </div>
                             <div class="post__info">
-                                <b class="post__author-name"><?= anti_xss($post['author']) ?></b>
+                                <b class="post__author-name"><?= anti_xss($post['author_login']) ?></b>
                                 <?php $post_date = get_post_time($index); ?>
                                 <time class="post__time" title="<?= $post_date->format('d.m.Y H:i') ?>" datetime="<?= $post_date->format('Y-m-d H:i:s') ?>"><?= time_ago($post_date) ?></time>
                             </div>

@@ -136,9 +136,80 @@ function plural_form($n, $forms)
     return $n % 10 == 1 && $n % 100 != 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
 }
 
+
+/** 
+* Генерирует случаную дату для поста
+*/
 function get_post_time($index)
 {
     $random_date = generate_random_date($index);
     $post_date = new DateTime($random_date);
     return $post_date;
+}
+
+/**
+* Подключаемся к базе данных и проверяем есть подключение или нет.
+* @param string $host     Наименование локального хоста.
+* @param string $user     Имя пользователя БД
+* @param string $password Пароль пользователя БД
+* @param string $database Имя БД
+*
+* @return mysqli
+*/
+function database_conecting ($host, $user, $password, $database) {
+    $link = mysqli_connect($host, $user, $password, $database);
+    if ($link === false) {
+        die("Ошибка подключения: " . mysqli_connect_error());
+    }
+    else {
+        mysqli_set_charset($link, "utf8");
+        return $link;
+    }
+}
+
+/**
+ * Функция берет данные из запроса sql и возвращает двумерный массив
+ * @param mysqli
+ * @param string $sql запрос в базу данных
+ * 
+ * @return array двумерный массив данных
+ */
+function get_data($link, $sql) {
+    $result = mysqli_query($link, $sql);
+    if (!$result) {
+        $error = mysqli_error($link); 
+        die("Ошибка MySQL: " . $error);
+    }
+    else {
+        $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    }
+    return $result; 
+ }
+ 
+ /**
+  * Функция вызывает список постов сортированных по популярности с указанием автора поста на главную страницу
+  * @param mysqli
+  * 
+  * @return array двумерный массив данных
+*/
+function popular_posts($link) {
+    $sql = '
+    SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login
+    FROM posts p 
+    JOIN users u ON p.user_id = u.id
+    JOIN content_type ct ON p.type_id = ct.id
+    ORDER BY p.views DESC LIMIT 6
+    '; // значит последний LIMIT 6 не нужен? Ну если мы не ограничиваем колличество постов?
+    return get_data($link, $sql);
+}
+
+/**
+  * Функция вызывает список категорий
+  * @param mysqli
+  * 
+  * @return array двумерный массив данных
+*/
+function posts_categories($link) {
+    $sql = 'SELECT * FROM content_type';
+    return get_data($link, $sql);
 }
