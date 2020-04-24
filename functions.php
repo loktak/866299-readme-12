@@ -138,8 +138,8 @@ function plural_form($n, $forms)
 
 
 /** 
-* Генерирует случаную дату для поста
-*/
+ * Генерирует случаную дату для поста
+ */
 function get_post_time($index)
 {
     $random_date = generate_random_date($index);
@@ -148,23 +148,22 @@ function get_post_time($index)
 }
 
 /**
-* Подключаемся к базе данных и проверяем есть подключение или нет.
-* @param string $host     Наименование локального хоста.
-* @param string $user     Имя пользователя БД
-* @param string $password Пароль пользователя БД
-* @param string $database Имя БД
-*
-* @return mysqli
-*/
-function database_conecting ($host, $user, $password, $database) {
+ * Подключаемся к базе данных и проверяем есть подключение или нет.
+ * @param string $host     Наименование локального хоста.
+ * @param string $user     Имя пользователя БД
+ * @param string $password Пароль пользователя БД
+ * @param string $database Имя БД
+ *
+ * @return mysqli
+ */
+function database_conecting($host, $user, $password, $database)
+{
     $link = mysqli_connect($host, $user, $password, $database);
     if ($link === false) {
         die("Ошибка подключения: " . mysqli_connect_error());
     }
-    else {
-        mysqli_set_charset($link, "utf8");
-        return $link;
-    }
+    mysqli_set_charset($link, "utf8");
+    return $link;
 }
 
 /**
@@ -174,42 +173,113 @@ function database_conecting ($host, $user, $password, $database) {
  * 
  * @return array двумерный массив данных
  */
-function get_data($link, $sql) {
+function get_data($link, $sql)
+{
     $result = mysqli_query($link, $sql);
     if (!$result) {
-        $error = mysqli_error($link); 
+        $error = mysqli_error($link);
         die("Ошибка MySQL: " . $error);
-    }
-    else {
-        $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
-    }
-    return $result; 
- }
- 
- /**
-  * Функция вызывает список постов сортированных по популярности с указанием автора поста на главную страницу
-  * @param mysqli
-  * 
-  * @return array двумерный массив данных
-*/
-function popular_posts($link) {
-    $sql = '
-    SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login
-    FROM posts p 
+    } 
+    $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    return $result;
+}
+
+/**
+ * Функция вызывает список постов сортированных по популярности (по умолчанию) с указанием автора поста на главную страницу
+ * @param mysqli
+ * @param string $sort_value Выбор по какому параметру сортировать
+ * @param string $sorting сортировка по возрастанию или убыванию
+ * @return array двумерный массив данных
+ */
+function popular_posts($link, $sort_value = 'views', $sorting = ' DESC')
+{
+    $sql = "
+    SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_value
+    FROM posts p
     JOIN users u ON p.user_id = u.id
     JOIN content_type ct ON p.type_id = ct.id
-    ORDER BY p.views DESC LIMIT 6
-    '; // значит последний LIMIT 6 не нужен? Ну если мы не ограничиваем колличество постов?
+    LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
+    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com ON com.post_id = p.id
+    ORDER BY $sort_value $sorting
+    ";
+    return get_data($link, $sql);
+}
+
+
+/**
+ * Функция вызывает список постов сортированных по популярности с указанием автора поста на главную страницу.
+ * @param mysqli
+ * @param string $type Выбор типа поста
+ * @param string $sort_value Выбор по какому параметру сортировать
+ * @param string $sorting сортировка по возрастанию или убыванию
+ * 
+ * @return array двумерный массив данных
+ */
+function popular_posts_category_sorting($link, $type, $sort_value = 'views', $sorting = ' DESC')
+{
+    $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_value
+    FROM posts p
+    JOIN users u ON p.user_id = u.id
+    JOIN content_type ct ON p.type_id = ct.id
+    LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
+    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com ON com.post_id = p.id
+    WHERE ct.icon_type = '$type'
+    ORDER BY $sort_value $sorting";
     return get_data($link, $sql);
 }
 
 /**
-  * Функция вызывает список категорий
-  * @param mysqli
-  * 
-  * @return array двумерный массив данных
-*/
-function posts_categories($link) {
+ * Функция вызывает список категорий
+ * @param mysqli
+ * 
+ * @return array двумерный массив данных
+ */
+function posts_categories($link)
+{
     $sql = 'SELECT * FROM content_type';
     return get_data($link, $sql);
+}
+
+function get_post_info($link, $post_id)
+{
+    $sql = " SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, 
+    IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_count, 
+    IFNULL(sub.subscribers, 0) AS subscribers
+    FROM posts p
+    JOIN users u ON p.user_id = u.id
+    JOIN content_type ct ON p.type_id = ct.id
+    LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
+    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) 
+    AS com ON com.post_id = p.id
+    LEFT JOIN (SELECT sub.userto_id, COUNT(*) AS subscribers FROM subscriptions sub GROUP BY sub.userto_id) 
+    AS sub ON sub.userto_id = p.user_id
+    WHERE p.id = $post_id ";
+    return get_data($link, $sql);
+}
+
+
+function get_user_posts_count($link, $user_id)
+{
+    $sql = "SELECT COUNT(*) AS user_posts FROM posts WHERE user_id = $user_id";
+    return get_data($link, $sql);
+}
+
+/**
+ * Функция создает url страницы с учетом уже существующих GET запросов
+ * @param string $type
+ * @param string $sort_value
+ * @param string $sorting
+ *
+ * @return array двумерный массив данных
+ */
+function set_url($type, $sort_value, $sorting, $page_url = "index.php")
+{
+    $params = $_GET;
+
+    $params['type'] = $type;
+    $params['sort_value'] = $sort_value;
+    $params['sorting'] = $sorting;
+    $querry = http_build_query($params);
+    $url = "/" . $page_url . "?" . $querry;
+    return $url;
 }
