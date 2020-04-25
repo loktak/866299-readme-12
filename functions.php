@@ -179,7 +179,7 @@ function get_data($link, $sql)
     if (!$result) {
         $error = mysqli_error($link);
         die("Ошибка MySQL: " . $error);
-    } 
+    }
     $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
     return $result;
 }
@@ -240,6 +240,13 @@ function posts_categories($link)
     return get_data($link, $sql);
 }
 
+/**
+ * Функция вызывает информацию по по посту используя его id.
+ * @param mysqli
+ * @param string $post_id id поста
+ * 
+ * @return array двумерный массив данных
+ */
 function get_post_info($link, $post_id)
 {
     $sql = " SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, 
@@ -254,13 +261,23 @@ function get_post_info($link, $post_id)
     LEFT JOIN (SELECT sub.userto_id, COUNT(*) AS subscribers FROM subscriptions sub GROUP BY sub.userto_id) 
     AS sub ON sub.userto_id = p.user_id
     WHERE p.id = $post_id ";
-    return get_data($link, $sql);
+    $result = get_data($link, $sql);
+    if (empty($result)) {
+        return NULL;
+    }
+    return $result; 
 }
 
-
+/**
+ * Функция список постов одного пользователя по id пользователя.
+ * @param mysqli
+ * @param string $user_id id пользователя
+ * 
+ * @return array двумерный массив данных
+ */
 function get_user_posts_count($link, $user_id)
 {
-    $sql = "SELECT COUNT(*) AS user_posts FROM posts WHERE user_id = $user_id";
+    $sql = "SELECT p.id FROM posts p WHERE user_id = $user_id";
     return get_data($link, $sql);
 }
 
@@ -275,7 +292,7 @@ function get_user_posts_count($link, $user_id)
 function set_url($type, $sort_value, $sorting, $page_url = "index.php")
 {
     $params = $_GET;
-
+    
     $params['type'] = $type;
     $params['sort_value'] = $sort_value;
     $params['sorting'] = $sorting;

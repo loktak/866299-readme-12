@@ -117,8 +117,8 @@
               <span class="post-details__rating-text user__rating-text"><?= plural_form($post_info['subscribers'],  array('подписчик', 'подписчика', 'подписчиков')) ?></span>
             </p>
             <p class="post-details__rating-item user__rating-item user__rating-item--publications">
-              <span class="post-details__rating-amount user__rating-amount"><?= $user_posts['user_posts'] ?></span>
-              <span class="post-details__rating-text user__rating-text"><?= plural_form($user_posts['user_posts'],  array('публикация', 'публикации', 'публикаций')) ?></span>
+              <span class="post-details__rating-amount user__rating-amount"><?= $user_posts ?></span>
+              <span class="post-details__rating-text user__rating-text"><?= plural_form($user_posts,  array('публикация', 'публикации', 'публикаций')) ?></span>
             </p>
           </div>
           <div class="post-details__user-buttons user__buttons">
