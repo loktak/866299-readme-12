@@ -9,13 +9,11 @@ require_once('helpers.php');
 
 $link = database_conecting('localhost', 'root', 'root', 'readme');
 
-$page_content = include_template('post404.php', []);
-
 if (isset($_GET['post_id'])) {
-    list($post_info) = get_post_info($link, $_GET['post_id']);
-    if (isset($post_info['id'])) {
-        $user_posts = count(get_user_posts_count($link, $post_info['user_id']));
-        switch ($post_info['icon_type']):
+    $post_info = get_post_info($link, $_GET['post_id'])[0];
+    if (!empty($post_info)) {
+        $user_posts = count(get_user_posts_count($link, ($post_info['user_id'])));
+        switch ($post_info['icon_type']) {
             case 'link':
                 $post_content = include_template('post-link.php', [
                     'post_info' => $post_info
@@ -40,13 +38,17 @@ if (isset($_GET['post_id'])) {
                 $post_content = include_template('post-text.php', [
                     'post_info' => $post_info
                 ]);
-        endswitch;
+        }
         $page_content = include_template('post-layout.php', [
             'post_content' => $post_content,
             'post_info' => $post_info,
             'user_posts' => $user_posts
         ]);
+    } else {
+        $page_content = include_template('post404.php', []);
     }
+} else {
+    $page_content = include_template('post404.php', []);
 }
 
 $layout_content = include_template('layout.php', [
@@ -55,7 +57,5 @@ $layout_content = include_template('layout.php', [
     'is_auth' => $is_auth,
     'user_name' => $user_name
 ]);
-
-
 
 print($layout_content);
