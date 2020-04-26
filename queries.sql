@@ -86,7 +86,10 @@ WHERE c.post_id = 5;
 */
 
 INSERT INTO likes (user_id, post_id)
-VALUES (1, 5);
+VALUES 
+(1, 5),
+(4, 5),
+(3, 5);
 
 /*
 Подписка на пользователя

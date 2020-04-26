@@ -7,7 +7,7 @@
             <b class="popular__sorting-caption sorting__caption">Сортировка:</b>
             <ul class="popular__sorting-list sorting__list">
                 <li class="sorting__item sorting__item--popular">
-                    <a class="sorting__link sorting__link--active" href="#">
+                    <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'views') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" href="<?= set_url($sorting_parameters['type'], 'views', ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC"); ?>">
                         <span>Популярность</span>
                         <svg class="sorting__icon" width="10" height="12">
                             <use xlink:href="#icon-sort"></use>
@@ -15,7 +15,8 @@
                     </a>
                 </li>
                 <li class="sorting__item">
-                    <a class="sorting__link" href="#">
+                    <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'likes') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" 
+                    href="<?= set_url($sorting_parameters['type'], 'likes', ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC"); ?>">
                         <span>Лайки</span>
                         <svg class="sorting__icon" width="10" height="12">
                             <use xlink:href="#icon-sort"></use>
@@ -23,7 +24,8 @@
                     </a>
                 </li>
                 <li class="sorting__item">
-                    <a class="sorting__link" href="#">
+                    <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'post_date') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" 
+                    href="<?= set_url($sorting_parameters['type'], 'post_date', ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC"); ?>">
                         <span>Дата</span>
                         <svg class="sorting__icon" width="10" height="12">
                             <use xlink:href="#icon-sort"></use>
@@ -36,13 +38,13 @@
             <b class="popular__filters-caption filters__caption">Тип контента:</b>
             <ul class="popular__filters-list filters__list">
                 <li class="popular__filters-item popular__filters-item--all filters__item filters__item--all">
-                    <a class="filters__button filters__button--ellipse filters__button--all filters__button--active" href="#">
+                    <a class="filters__button filters__button--ellipse filters__button--all <?= ($sorting_parameters['type'] === 'all') ? 'filters__button--active' : ""; ?>" href="<?= set_url('all', $sorting_parameters['sort_value'], $sorting_parameters['sorting']) ?>">
                         <span>Все</span>
                     </a>
                 </li>
                 <?php foreach ($types as $type) : ?>
                     <li class="popular__filters-item filters__item">
-                        <a class="filters__button filters__button--<?= ($type['icon_type']) ?> button" href="#">
+                        <a href="<?= set_url($type['icon_type'], $sorting_parameters['sort_value'], $sorting_parameters['sorting']) ?>" class="filters__button filters__button--<?= ($type['icon_type']) ?> <?= ($sorting_parameters['type'] == $type['icon_type']) ? 'filters__button--active' : ""; ?> button">
                             <span class="visually-hidden"><?= ($type['type_name']) ?></span>
                             <svg class="filters__icon" width="22" height="18">
                                 <use xlink:href="#icon-filter-<?= ($type['icon_type']) ?>"></use>
@@ -57,7 +59,7 @@
         <?php foreach ($posts as $index => $post) : ?>
             <article class="popular__post post post-<?= $post['icon_type'] ?>">
                 <header class="post__header">
-                    <h2><?= $post['title'] ?></h2>
+                    <h2><a href="post.php?post_id=<?= $post['id']?>"><?= $post['title'] ?></a></h2>
                 </header>
                 <div class="post__main">
                     <?php if ($post['icon_type'] === 'quote') : ?>
@@ -88,7 +90,7 @@
                     <?php elseif ($post['icon_type'] === 'video') : ?>
                         <div class="post-video__block">
                             <div class="post-video__preview">
-                                <img src="img/coast-medium.jpg" alt="Превью к видео" width="360" height="188">
+                                <?= embed_youtube_cover($post['video']) ?>
                             </div>
                             <a href="<?= htmlspecialchars($post['video']) ?>" class="post-video__play-big button" target="_blank">
                                 <svg class="post-video__play-big-icon" width="14" height="14">
@@ -124,14 +126,14 @@
                                 <svg class="post__indicator-icon post__indicator-icon--like-active" width="20" height="17">
                                     <use xlink:href="#icon-heart-active"></use>
                                 </svg>
-                                <span>0</span>
+                                <span><?= $post['likes'] ?></span>
                                 <span class="visually-hidden">количество лайков</span>
                             </a>
                             <a class="post__indicator post__indicator--comments button" href="#" title="Комментарии">
                                 <svg class="post__indicator-icon" width="19" height="17">
                                     <use xlink:href="#icon-comment"></use>
                                 </svg>
-                                <span>0</span>
+                                <span><?= $post['comments_value'] ?></span>
                                 <span class="visually-hidden">количество комментариев</span>
                             </a>
                         </div>
