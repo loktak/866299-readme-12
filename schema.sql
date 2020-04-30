@@ -60,7 +60,7 @@ CREATE TABLE messages (
 
 CREATE TABLE hashtags (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-title VARCHAR(128)
+title VARCHAR(128),
 );
 
 CREATE TABLE content_type (

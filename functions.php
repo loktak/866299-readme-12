@@ -262,7 +262,7 @@ function get_post_info($link, $post_id)
    WHERE p.id = $post_id
    GROUP BY l.post_id";
     $result = get_data($link, $sql);
-    
+
     return empty($result) ? NULL : $result;
 }
 
@@ -290,11 +290,261 @@ function get_user_posts_count($link, $user_id)
 function set_url($type, $sort_value, $sorting, $page_url = "index.php")
 {
     $params = $_GET;
-    
+
     $params['type'] = $type;
     $params['sort_value'] = $sort_value;
     $params['sorting'] = $sorting;
     $querry = http_build_query($params);
     $url = "/" . $page_url . "?" . $querry;
     return $url;
+}
+
+/**
+ * Функция создает значение на основании того есть ли такое значение в POST запросе
+ * @param string $name 
+ * 
+ * @return string значение из POST запроса
+ */
+function getPostValue($name)
+{
+    return $_POST[$name] ?? "";
+}
+
+
+//* Функция проверяет что такое видео есть на youtube и оно доступно
+function chek_video_url($youtube_url)
+{
+    $filtred_url = filter_var($youtube_url);
+    if ($filtred_url != NULL) {
+        $result = check_youtube_url($filtred_url);
+    } else {
+        $result = 'ошибка';
+    }
+    return $result;
+}
+
+
+/** Функция проверяет заполнены ли поля формы по указаным ключам
+ * @param array $required_fields
+ * 
+ * @return array массив данных
+ */
+function not_empty($required_fields)
+{
+    $errors = [];
+    foreach ($required_fields as $key => $field) {
+        if (empty($_POST[$field])) {
+            $errors[$field] = "Поле должно быть заполнено";
+        }
+    }
+    return $errors;
+}
+
+function check_adding_link_post()
+{
+    $required_fields = ['heading', 'post-link'];
+    $errors = not_empty($required_fields);
+
+    $rules = [
+        'heading' => function () {
+            return validate_lenght($_POST['heading']);
+        },
+        'post-link' => function () {
+            return check_url($_POST['post-link']);
+        }
+    ];
+
+    foreach ($_POST as $key => $value) {
+        if (empty($errors[$key])) {
+            if (isset($rules[$key])) {
+                $rule = $rules[$key];
+                $errors[$key] = $rule();
+            }
+        }
+    }
+    return $errors;
+}
+
+function check_adding_quote_post()
+{
+    $required_fields = ['heading', 'cite-text', 'quote-author'];
+    $errors = not_empty($required_fields);
+    $rules = [
+        'heading' => function () {
+            return validate_lenght($_POST['heading']);
+        },
+        'cite-text' => function () {
+            return validate_lenght($_POST['cite-text'], 10, 75);
+        }
+    ];
+
+    foreach ($_POST as $key => $value) {
+        if (empty($errors[$key])) {
+            if (isset($rules[$key])) {
+                $rule = $rules[$key];
+                $errors[$key] = $rule();
+            }
+        }
+    }
+    return $errors;
+}
+
+function check_adding_text_post()
+{
+    $required_fields = ['heading', 'post-text'];
+    $errors = not_empty($required_fields);
+    $rules = [
+        'heading' => function () {
+            return validate_lenght($_POST['heading']);
+        }
+    ];
+
+    foreach ($_POST as $key => $value) {
+        if (empty($errors[$key])) {
+            if (isset($rules[$key])) {
+                $rule = $rules[$key];
+                $errors[$key] = $rule();
+            }
+        }
+    }
+    return $errors;
+}
+
+function check_adding_video_post()
+{
+    $required_fields = ['heading', 'video-url'];
+    $errors = not_empty($required_fields);
+    $rules = [
+        'heading' => function () {
+            return validate_lenght($_POST['heading']);
+        },
+        'video-url' => function () {
+            return check_url($_POST['video-url']);
+        }
+    ];
+
+    foreach ($_POST as $key => $value) {
+        if (empty($errors[$key])) {
+            if (isset($rules[$key])) {
+                $rule = $rules[$key];
+                $errors[$key] = $rule();
+            }
+        }
+    }
+    if (empty($errors['video-url'])) {
+        $errors['video-url'] = check_youtube_link($_POST['video-url']);
+    }
+    return $errors;
+}
+
+function check_adding_picture_post()
+{
+    $required_fields = ['heading'];
+    if (empty($_FILES['picture'])) {
+        $required_fields = ['heading', 'photo-url'];
+    }
+
+    $errors = not_empty($required_fields);
+    $rules = [
+        'heading' => function () {
+            return validate_lenght($_POST['heading']);
+        }
+    ];
+    if (empty($_FILES['picture'])) {
+        $rules = [
+            'heading' => function () {
+                return validate_lenght($_POST['heading']);
+            },
+            'photo-url' => function () {
+                return check_url($_POST['photo-url']);
+            }
+        ];
+    }
+
+
+    foreach ($_POST as $key => $value) {
+        if (empty($errors[$key])) {
+            if (isset($rules[$key])) {
+                $rule = $rules[$key];
+                $errors[$key] = $rule();
+            }
+        }
+    }
+
+    return $errors;
+}
+
+
+function check_tags()
+{
+    if (!empty($_POST['tags'])) {
+        $tags_array = [];
+        $tags = $_POST['tags'];
+        $tags = htmlspecialchars($tags);
+        $tags = trim($tags);
+        $tags_array = explode(" ", $tags);
+        if (preg_match('/[^a-zа-я ]+/msiu', $tags)) {
+            return 'Теги должны состоять только из букв.';
+        } else {
+            foreach ($tags_array as $tag) {
+                if (mb_strlen($tag) > 20) {
+                    return 'Используется слишком длинный тег. Подберите синоним или убедитесь что тег состоит из одного слова';
+                }
+            }
+        }
+    }
+}
+
+function validate_lenght($text, $min = 3, $max = 25)
+{
+    if (mb_strlen($text) < $min || mb_strlen($text) > $max) {
+        return "Значение поля должно быть не меньше $min и не больше $max символов";
+    }
+}
+
+function check_url($url)
+{
+    if (!filter_var($url, FILTER_VALIDATE_URL)) {
+        return "Формат ссылки не верен.";
+    }
+}
+
+function check_youtube_link($url)
+{
+    $id = extract_youtube_id($url);
+    $headers = get_headers('https://www.youtube.com/oembed?format=json&url=http://www.youtube.com/watch?v=' . $id);
+    if (is_array($headers)) {
+        preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/', $headers[0]);
+        $err_flag = strpos($headers[0], '200') ? '200' : '404';
+    }
+    if ($err_flag != 200) {
+        return "Видео по такой ссылке не найдено. Проверьте ссылку на видео";
+    }
+}
+
+
+function get_img_by_link($url) {
+    
+    $file_name = basename($url);
+    $file_path = __DIR__ . "/uploads/" . $file_name;
+    $file_info = new finfo(FILEINFO_MIME_TYPE);
+
+    $mime_type = $file_info->buffer(file_get_contents($url));
+    if ($mime_type != 'image/jpg' or $mime_type != 'image/png' or $mime_type != 'image/gif') {
+        return $mime_type;
+    }
+
+    file_put_contents($file_path, file_get_contents($url));
+}
+
+function upload_post_picture($files)
+{
+    if (!empty($files["picture"]["tmp_name"])) {
+        $file_name = $files['picture']['name'];
+        $file_path = __DIR__ . '/uploads/';
+        move_uploaded_file($files['picture']['tmp_name'], $file_path . $file_name);
+        return 'все ок';
+    } else {
+        return 'ошибочки';
+    }
 }

@@ -195,9 +195,10 @@ function extract_youtube_id($youtube_url)
     $id = false;
 
     $parts = parse_url($youtube_url);
-
     if ($parts) {
+        $parts['path'] = $parts['path'] ?? NULL; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
         if ($parts['path'] == '/watch') {
+            $parts['query'] = $parts['query'] ?? NULL; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
             parse_str($parts['query'], $vars);
             $id = $vars['v'] ?? null;
         } else {
