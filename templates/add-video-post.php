@@ -4,8 +4,8 @@
     <input class="adding-post__input form__input" id="video-url" type="text" name="video-url" placeholder="Введите ссылку на видео" value="<?= getPostValue('video-url') ?>">
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
-      <h3 class="form__error-title"><?= (!empty($errors['video-url']) ? $errors['video-url'] : "" )?></h3>
-      <p class="form__error-desc">Ссылка должна вести на существующее и общедоступное видео на youtube</p>
+      <h3 class="form__error-title">Обнаружена ошибка</h3>
+      <p class="form__error-desc"><?= (!empty($errors['video-url']) ? $errors['video-url'] : "" )?></p>
     </div>
   </div>
 </div>

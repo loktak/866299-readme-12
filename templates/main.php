@@ -71,7 +71,7 @@
                         </blockquote>
                     <?php elseif ($post['icon_type'] === 'photo') : ?>
                         <div class="post-photo__image-wrapper">
-                            <img src="img/<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
+                            <img src="<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
                         </div>
                     <?php elseif ($post['icon_type'] === 'link') : ?>
                         <div class="post-link__wrapper">

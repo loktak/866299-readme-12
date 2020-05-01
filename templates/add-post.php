@@ -31,8 +31,8 @@
                           <input class="adding-post__input form__input" id="heading" type="text" name="heading" placeholder="Введите заголовок" value="<?= getPostValue('heading') ?>">
                           <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
                           <div class="form__error-text">
-                            <h3 class="form__error-title"><?= (!empty($errors['heading']) ? $errors['heading'] : "" )?></h3>
-                            <p class="form__error-desc">Обязательное поле. Проявите фантазию.</p>
+                            <h3 class="form__error-title">Обнаружена ошибка</h3>
+                            <p class="form__error-desc"><?= (!empty($errors['heading']) ? $errors['heading'] : "" )?></p>
                           </div>
                         </div>
                       </div>
@@ -43,8 +43,8 @@
                           <input class="adding-post__input form__input" id="tags" type="text" name="tags" placeholder="Введите теги" value="<?= getPostValue('tags') ?>">
                           <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
                           <div class="form__error-text">
-                            <h3 class="form__error-title"><?= (!empty($errors['tags']) ? $errors['tags'] : "" )?></h3>
-                            <p class="form__error-desc">Один хештег — одно слово. Теги разделяются пробелами</p>
+                            <h3 class="form__error-title">Обнаружена ошибка</h3>
+                            <p class="form__error-desc"><?= (!empty($errors['tags']) ? $errors['tags'] : "" )?></p>
                           </div>
                         </div>
                       </div>

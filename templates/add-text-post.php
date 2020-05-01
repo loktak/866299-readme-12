@@ -4,8 +4,8 @@
     <textarea class="adding-post__textarea form__textarea form__input" id="post-text" name="post-text" placeholder="Введите текст публикации"><?= getPostValue('post-text') ?></textarea>
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
-      <h3 class="form__error-title"><?= (!empty($errors['post-text']) ? $errors['post-text'] : "" )?></h3>
-      <p class="form__error-desc">Обязательно к заполнению. Напишите хотя бы слово.</p>
+      <h3 class="form__error-title">Обнаружена ошибка</h3>
+      <p class="form__error-desc"><?= (!empty($errors['post-text']) ? $errors['post-text'] : "" )?></p>
     </div>
   </div>
 </div>

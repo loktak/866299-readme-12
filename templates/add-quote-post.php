@@ -4,8 +4,8 @@
     <textarea class="adding-post__textarea adding-post__textarea--quote form__textarea form__input" id="cite-text" name="cite-text" placeholder="Текст цитаты" ><?= getPostValue('cite-text') ?></textarea>
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
-      <h3 class="form__error-title"><?= (!empty($errors['cite-text']) ? $errors['cite-text'] : "" )?></h3>
-      <p class="form__error-desc">Давайте не будем цитировать целые книги. 75 символов будет вполне достаточно.</p>
+      <h3 class="form__error-title">Обнаружена ошибка</h3>
+      <p class="form__error-desc"><?= (!empty($errors['cite-text']) ? $errors['cite-text'] : "" )?></p>
     </div>
   </div>
 </div>
@@ -15,8 +15,8 @@
     <input class="adding-post__input form__input" id="quote-author" type="text" name="quote-author" placeholder="Введите автора цитаты" value="<?= getPostValue('quote-author') ?>">
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
-      <h3 class="form__error-title"><?= (!empty($errors['quote-author']) ? $errors['quote-author'] : "" )?></h3>
-      <p class="form__error-desc">Не знаете кто это сказал? Так и напишите.</p>
+      <h3 class="form__error-title">Обнаружена ошибка</h3>
+      <p class="form__error-desc"><?= (!empty($errors['quote-author']) ? $errors['quote-author'] : "" )?></p>
     </div>
   </div>
 </div>

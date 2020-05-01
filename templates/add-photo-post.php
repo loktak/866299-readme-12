@@ -4,8 +4,8 @@
     <input class="adding-post__input form__input " id="photo-url" type="text" name="photo-url" placeholder="Введите ссылку" value="<?= getPostValue('photo-url') ?>">
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
-      <h3 class="form__error-title"><?= (!empty($errors['photo-url']) ? $errors['photo-url'] : "" )?></h3>
-      <p class="form__error-desc">Текст сообщения об ошибке, подробно объясняющий, что не так.</p>
+      <h3 class="form__error-title">Обнаружена ошибка</h3>
+      <p class="form__error-desc"><?= (!empty($errors['photo-url']) ? $errors['photo-url'] : "" )?></p>
     </div>
   </div>
 </div>

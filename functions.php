@@ -340,20 +340,14 @@ function not_empty($required_fields)
     return $errors;
 }
 
-function check_adding_link_post()
+/** Функция проверяет ошибки по соответствующим ключам и записывает их в массив
+ * @param array $rules массив со значениями которые надо проверить
+ * @param array $errors массив с уже существующими ошибками
+ * 
+ * @return array массив данных с ошибками
+ */
+function check_rules($rules, $errors)
 {
-    $required_fields = ['heading', 'post-link'];
-    $errors = not_empty($required_fields);
-
-    $rules = [
-        'heading' => function () {
-            return validate_lenght($_POST['heading']);
-        },
-        'post-link' => function () {
-            return check_url($_POST['post-link']);
-        }
-    ];
-
     foreach ($_POST as $key => $value) {
         if (empty($errors[$key])) {
             if (isset($rules[$key])) {
@@ -365,136 +359,33 @@ function check_adding_link_post()
     return $errors;
 }
 
-function check_adding_quote_post()
+/** Функция поле тэги на соответсвтие тз
+ * @param string $tags строчка тегов
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
+function check_tags($tags)
 {
-    $required_fields = ['heading', 'cite-text', 'quote-author'];
-    $errors = not_empty($required_fields);
-    $rules = [
-        'heading' => function () {
-            return validate_lenght($_POST['heading']);
-        },
-        'cite-text' => function () {
-            return validate_lenght($_POST['cite-text'], 10, 75);
-        }
-    ];
-
-    foreach ($_POST as $key => $value) {
-        if (empty($errors[$key])) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule();
-            }
-        }
-    }
-    return $errors;
-}
-
-function check_adding_text_post()
-{
-    $required_fields = ['heading', 'post-text'];
-    $errors = not_empty($required_fields);
-    $rules = [
-        'heading' => function () {
-            return validate_lenght($_POST['heading']);
-        }
-    ];
-
-    foreach ($_POST as $key => $value) {
-        if (empty($errors[$key])) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule();
-            }
-        }
-    }
-    return $errors;
-}
-
-function check_adding_video_post()
-{
-    $required_fields = ['heading', 'video-url'];
-    $errors = not_empty($required_fields);
-    $rules = [
-        'heading' => function () {
-            return validate_lenght($_POST['heading']);
-        },
-        'video-url' => function () {
-            return check_url($_POST['video-url']);
-        }
-    ];
-
-    foreach ($_POST as $key => $value) {
-        if (empty($errors[$key])) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule();
-            }
-        }
-    }
-    if (empty($errors['video-url'])) {
-        $errors['video-url'] = check_youtube_link($_POST['video-url']);
-    }
-    return $errors;
-}
-
-function check_adding_picture_post()
-{
-    $required_fields = ['heading'];
-    if (empty($_FILES['picture'])) {
-        $required_fields = ['heading', 'photo-url'];
-    }
-
-    $errors = not_empty($required_fields);
-    $rules = [
-        'heading' => function () {
-            return validate_lenght($_POST['heading']);
-        }
-    ];
-    if (empty($_FILES['picture'])) {
-        $rules = [
-            'heading' => function () {
-                return validate_lenght($_POST['heading']);
-            },
-            'photo-url' => function () {
-                return check_url($_POST['photo-url']);
-            }
-        ];
-    }
-
-
-    foreach ($_POST as $key => $value) {
-        if (empty($errors[$key])) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule();
-            }
-        }
-    }
-
-    return $errors;
-}
-
-
-function check_tags()
-{
-    if (!empty($_POST['tags'])) {
-        $tags_array = [];
-        $tags = $_POST['tags'];
-        $tags = htmlspecialchars($tags);
-        $tags = trim($tags);
-        $tags_array = explode(" ", $tags);
-        if (preg_match('/[^a-zа-я ]+/msiu', $tags)) {
-            return 'Теги должны состоять только из букв.';
-        } else {
-            foreach ($tags_array as $tag) {
-                if (mb_strlen($tag) > 20) {
-                    return 'Используется слишком длинный тег. Подберите синоним или убедитесь что тег состоит из одного слова';
-                }
+    $tags_array = [];
+    $tags_array = explode(" ", $tags);
+    if (preg_match('/[^a-zа-я ]+/msiu', $tags)) {
+        return 'Теги должны состоять только из букв.';
+    } else {
+        foreach ($tags_array as $tag) {
+            if (mb_strlen($tag) > 20) {
+                return 'Используется слишком длинный тег. Подберите синоним или убедитесь что тег состоит из одного слова';
             }
         }
     }
 }
 
+/** Функция проверяет текст на колличество символов в нем, и выводит сообщение если проверка не прошла
+ * @param string $text сам текст
+ * @param int $min минимальное значение символов
+ * @param int $max максимальное значение символов
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
 function validate_lenght($text, $min = 3, $max = 25)
 {
     if (mb_strlen($text) < $min || mb_strlen($text) > $max) {
@@ -502,6 +393,11 @@ function validate_lenght($text, $min = 3, $max = 25)
     }
 }
 
+/** Функция проверяет ссылку с помощью filter_var
+ * @param string $url ссылка
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
 function check_url($url)
 {
     if (!filter_var($url, FILTER_VALIDATE_URL)) {
@@ -509,6 +405,11 @@ function check_url($url)
     }
 }
 
+/** Функция проверяет доступно ли видео по ссылке на youtube
+ * @param string $url ссылка на видео
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
 function check_youtube_link($url)
 {
     $id = extract_youtube_id($url);
@@ -522,29 +423,62 @@ function check_youtube_link($url)
     }
 }
 
+/** Функция проверяет файл по ссылке. и если он соответствует критериям загружает его в папку uploads
+ * @param string $url ссылка на сайт
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
+function get_img_by_link($url)
+{
+    if (file_get_contents($url)) {  //@question даже валидная ссылка, если она не содержит в себе файла будет вызывать варнинг. как от него избавится без использования запрещенных @. Такая проверка обязаетльна по ТЗ
+        $file_name = basename($url);
+        $file_path = __DIR__ . "/uploads/" . $file_name;
+        $file_info = new finfo(FILEINFO_MIME_TYPE);
 
-function get_img_by_link($url) {
-    
-    $file_name = basename($url);
-    $file_path = __DIR__ . "/uploads/" . $file_name;
-    $file_info = new finfo(FILEINFO_MIME_TYPE);
-
-    $mime_type = $file_info->buffer(file_get_contents($url));
-    if ($mime_type != 'image/jpg' or $mime_type != 'image/png' or $mime_type != 'image/gif') {
-        return $mime_type;
+        $mime_type = $file_info->buffer(file_get_contents($url));
+        if ($mime_type !== 'image/png' && $mime_type !== 'image/jpeg' && $mime_type !== 'image/gif') {
+            return "Не подходящий формат изображения. Используйте jpg, png или gif";
+        } else {
+            file_put_contents($file_path, file_get_contents($url));
+        }
+    } else {
+        return 'Файл по данной ссылке не найден';
     }
-
-    file_put_contents($file_path, file_get_contents($url));
 }
 
-function upload_post_picture($files)
+/** Функция проверяет файл загруженный через форму обратной связи. и если он соответствует критериям загружает его в папку uploads
+ * @param array $files массив данных о файле
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
+ function upload_post_picture($files)
 {
-    if (!empty($files["picture"]["tmp_name"])) {
+    if (($files['picture']['size'] < 5242880)) {
         $file_name = $files['picture']['name'];
         $file_path = __DIR__ . '/uploads/';
-        move_uploaded_file($files['picture']['tmp_name'], $file_path . $file_name);
-        return 'все ок';
+        if ($files['picture']['type'] !== 'image/png' && $files['picture']['type'] !== 'image/jpeg' && $files['picture']['type'] !== 'image/gif') {
+            return 'Не подходящий формат прикрепленного изображения. Используйте jpg, png или gif. или воспользуйтесь ссылкой';
+        } else {
+            move_uploaded_file($files['picture']['tmp_name'], $file_path . $file_name);
+        }
     } else {
-        return 'ошибочки';
+        return 'прикрепленный файл слишком большой';
     }
+}
+
+/** Функция определяет как будет выглядеть путь до загруженного файла в зависимости от того был ли он загружен через форму или ссылкой
+ * @param string $url ссылка на файл
+ * @param array $files массив данных о файле
+ * 
+ * @return string $file_path путь до файла
+ */
+function get_file_path($url, $files)
+{
+    if (!empty($files['picture']['name'])) { 
+        $file_name = $files['picture']['name'];
+    } else {
+        $file_name = basename($url);
+    }
+    $file_path = "uploads/" . $file_name;
+    return $file_path;
 }
