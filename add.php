@@ -1,12 +1,7 @@
 <?php
-date_default_timezone_set("Europe/Moscow");
-$is_auth = rand(0, 1);
-$user_name = 'Арсений'; // укажите здесь ваше имя
+require_once('init.php');
 
-require_once('functions.php');
-require_once('helpers.php');
 
-$link = database_conecting('localhost', 'root', 'root', 'readme');
 
 $page_parameters['form-type'] = $_GET['type'] ?? 'photo';
 $page_parameters['heading'] = $_POST['heading'] ?? 'default';
@@ -18,7 +13,7 @@ $posts = [];
 $file_upload_input = "";
 
 // Проверяем что страница загружена методом POST
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $page_parameters['form-type'] = $_POST['form-type'];
     $posts = $_POST;
     switch ($posts['form-type']) {  //определяем список полей для проверки на пустое не пустое и правила для проверки полей, которые в этом нуждаются
@@ -138,45 +133,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 VALUES (?, ?, 4, 5)';
                 break;
         }
-        if (!empty($_POST['tags'])) { // если поле с тегами не пустое и ошибок соответственно нет, мы добавляем их в таблицу
-            $tags = explode(" ", $_POST['tags']);
-            $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
-            foreach ($tags as $tag) {
-                $values['title'] = htmlspecialchars($tag);
-                $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
-                $tag_result = mysqli_stmt_execute($tag_stml);
-            }
-        }
+
+
         $stml = db_get_prepare_stmt($link, $sql, $db_post);
-        $result = mysqli_stmt_execute($stml);
-        if ($result) {
-            $post_id = mysqli_insert_id($link);
+        
+        $post_id = add_post_to_db($link, $posts['tags'], $stml);
+        
+        if ($post_id !== 'Что-то пошло не так') {
 
             header("Location: post.php?post_id=" . $post_id);
+        } else {
+            $errors['sql'] = 'Ошибка загрузки поста';
         }
     }
 }
 
+$page_parameters['name'] = set_russian_form_name($page_parameters['form-type']); //названия для формы формы
 
-switch ($page_parameters['form-type']) { //делаем нормальные имена вкладкам
-    case 'photo':
-        $page_parameters['name'] = 'изображения';
-        $file_upload_input = include_template('add-photo-drag-n-drop.php', []);
-        break;
-    case 'video':
-        $page_parameters['name'] = 'видео';
-        break;
-    case 'text':
-        $page_parameters['name'] = 'текстового поста';
-        break;
-    case 'link':
-        $page_parameters['name'] = 'ссылки';
-        break;
-    case 'quote':
-        $page_parameters['name'] = 'цитаты';
+if ($page_parameters['form-type'] === 'photo') {
+    $file_upload_input = include_template('add-post/add-photo-drag-n-drop.php', []);
 }
 
-$content = include_template("add-" . $page_parameters['form-type'] . "-post.php", [
+$content = include_template("add-post/add-" . $page_parameters['form-type'] . "-post.php", [
     'errors' => $errors
 ]);
 

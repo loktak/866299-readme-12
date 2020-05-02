@@ -451,7 +451,7 @@ function get_img_by_link($url)
  * 
  * @return string Ошибку если валидация не прошла
  */
- function upload_post_picture($files)
+function upload_post_picture($files)
 {
     if (($files['picture']['size'] < 5242880)) {
         $file_name = $files['picture']['name'];
@@ -474,7 +474,7 @@ function get_img_by_link($url)
  */
 function get_file_path($url, $files)
 {
-    if (!empty($files['picture']['name'])) { 
+    if (!empty($files['picture']['name'])) {
         $file_name = $files['picture']['name'];
     } else {
         $file_name = basename($url);
@@ -482,3 +482,78 @@ function get_file_path($url, $files)
     $file_path = "uploads/" . $file_name;
     return $file_path;
 }
+
+
+/** Функция выводит русское название в соответствии со значением анлийкого
+ * @param string $text
+ * 
+ * @return string $russian_form_name название на русском
+ */
+
+function set_russian_form_name($text)
+{
+    switch ($text) { //делаем нормальные имена вкладкам
+        case 'photo':
+            $russian_form_name = 'изображения';
+
+            break;
+        case 'video':
+            $russian_form_name = 'видео';
+            break;
+        case 'text':
+            $russian_form_name = 'текстового поста';
+            break;
+        case 'link':
+            $russian_form_name = 'ссылки';
+            break;
+        case 'quote':
+            $russian_form_name = 'цитаты';
+    }
+    return $russian_form_name;
+}
+
+
+/**
+ * Добавления поста вместе с тегами если есть.
+ * @param mysqli $link
+ * @param string $tags_line строчка с тегами
+ * @return mysqli_stmt $stml Подготовленное выражение
+ * 
+ * @return string $post_id айди поста или ошибку
+ */
+function add_post_to_db($link, $tags_line, $stml)
+{
+    
+    $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
+    $result = mysqli_stmt_execute($stml);
+    if ($result) {
+        $post_id = mysqli_insert_id($link);
+    }
+    if ($tags_line !== NULL) {
+        $tags_line = anti_xss($tags_line);
+        $tags_line = trim($tags_line);
+        $tags_line = mb_strtolower($tags_line);
+        $tags = explode(" ", $tags_line);
+        foreach ($tags as $tag) { 
+            $search_sql = "SELECT h.id FROM hashtags h WHERE h.title = '$tag'";
+            $search_result = get_data($link, $search_sql)[0];
+            if (!empty($search_result)) {
+                $tag_id = $search_result['id'];
+                $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
+                $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
+                $result = mysqli_stmt_execute($tag_post_stml);
+            } else {
+                $values['title'] = $tag;
+                $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
+                $result = mysqli_stmt_execute($tag_stml);
+            }
+        }
+    }
+    if ($result) {
+        return $post_id;
+    } else {
+        return 'Что-то пошло не так';
+    }
+    
+}
+
