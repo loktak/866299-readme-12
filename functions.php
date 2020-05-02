@@ -539,14 +539,15 @@ function add_post_to_db($link, $tags_line, $stml)
             $search_result = get_data($link, $search_sql)[0];
             if (!empty($search_result)) {
                 $tag_id = $search_result['id'];
-                $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
-                $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
-                $result = mysqli_stmt_execute($tag_post_stml);
             } else {
                 $values['title'] = $tag;
                 $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
                 $result = mysqli_stmt_execute($tag_stml);
+                $tag_id = mysqli_insert_id($link);
             }
+            $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
+            $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
+            $result = mysqli_stmt_execute($tag_post_stml);
         }
     }
     if ($result) {
