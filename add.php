@@ -1,7 +1,6 @@
 <?php
 require_once('init.php');
-
-
+require_once('validation.php');
 
 $page_parameters['form-type'] = $_GET['type'] ?? 'photo';
 $page_parameters['heading'] = $_POST['heading'] ?? 'default';
@@ -10,7 +9,6 @@ $files = $_FILES;
 $errors = [];
 $required_fields = [];
 $posts = [];
-$file_upload_input = "";
 
 // Проверяем что страница загружена методом POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -19,95 +17,109 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     switch ($posts['form-type']) {  //определяем список полей для проверки на пустое не пустое и правила для проверки полей, которые в этом нуждаются
         case 'photo':
             if (empty($_FILES['picture']['name'])) {
-                $required_fields = ['heading', 'photo-url'];
+                $required_fields = ['heading', 'photo-url', 'tags'];
                 $rules = [
                     'heading' => function () {
                         return validate_lenght($_POST['heading']);
                     },
                     'photo-url' => function () {
                         return check_url($_POST['photo-url']);
+                    },
+                    'tags' => function () {
+                        return check_tags($_POST['tags']);
                     }
                 ];
             } else {
-                $required_fields = ['heading'];
+                $required_fields = ['heading', 'tags'];
                 $rules = [
                     'heading' => function () {
                         return validate_lenght($_POST['heading']);
+                    },
+                    'tags' => function () {
+                        return check_tags($_POST['tags']);
                     }
                 ];
             }
             break;
         case 'video':
-            $required_fields = ['heading', 'video-url'];
+            $required_fields = ['heading', 'video-url', 'tags'];
             $rules = [
                 'heading' => function () {
                     return validate_lenght($_POST['heading']);
                 },
                 'video-url' => function () {
                     return check_url($_POST['video-url']);
+                },
+                'tags' => function () {
+                    return check_tags($_POST['tags']);
                 }
             ];
             break;
         case 'text':
-            $required_fields = ['heading', 'post-text'];
+            $required_fields = ['heading', 'post-text', 'tags'];
             $rules = [
                 'heading' => function () {
                     return validate_lenght($_POST['heading']);
+                },
+                'tags' => function () {
+                    return check_tags($_POST['tags']);
                 }
             ];
             break;
         case 'quote':
-            $required_fields = ['heading', 'cite-text', 'quote-author'];
+            $required_fields = ['heading', 'cite-text', 'quote-author', 'tags'];
             $rules = [
                 'heading' => function () {
                     return validate_lenght($_POST['heading']);
                 },
                 'cite-text' => function () {
                     return validate_lenght($_POST['cite-text'], 10, 75);
+                },
+                'tags' => function () {
+                    return check_tags($_POST['tags']);
                 }
             ];
             break;
         case 'link':
-            $required_fields = ['heading', 'post-link'];
+            $required_fields = ['heading', 'post-link', 'tags'];
             $rules = [
                 'heading' => function () {
                     return validate_lenght($_POST['heading']);
                 },
                 'post-link' => function () {
                     return check_url($_POST['post-link']);
+                },
+                'tags' => function () {
+                    return check_tags($_POST['tags']);
                 }
             ];
     }
-    
+
     $errors = not_empty($required_fields); //проверка на пустое или нет
-    
+
     $errors = check_rules($rules, $errors); // проверка на rules
 
-    if (!empty($_FILES['picture']['name']))  {  //определяем каким способом был загружен файл если с помощью формы то выполняем одну функцию если нет то смотрим по ссылке
+    if (!empty($_FILES['picture']['name'])) {  //определяем каким способом был загружен файл если с помощью формы то выполняем одну функцию если нет то смотрим по ссылке
         $errors['input-file'] = upload_post_picture($files);
     } else {
         if (isset($_POST['photo-url']) && empty($errors['photo-url'])) {
             $errors['photo-url'] = get_img_by_link($_POST['photo-url']);
-        }
+        }   
     }
-    
+
     if ($_POST['form-type'] === 'video') {  // если иных ошибок не найдено проверяем что ссылка ведет на youtube
         if (empty($errors['video-url'])) {
             $errors['video-url'] = check_youtube_link($_POST['video-url']);
         }
     }
 
-    if (!empty($_POST['tags'])) { //если поле тэги не пустое, проверяем теги согласно тз
-        $errors['tags'] = check_tags($posts['tags']);
-    }
-    
     $errors = array_filter($errors); // выводим массив с ошибками
 
     if (empty($errors)) { // если массив c ошибками пустой
         $db_post['title'] = htmlspecialchars($_POST['heading']);
         switch ($posts['form-type']) {
             case 'photo':
-                $db_post['img'] = get_file_path($_POST['photo-url'], $files); 
+                $db_post['img'] = get_file_path($posts['photo-url'], $files['picture']['name']);
                 $sql = 'INSERT INTO posts (title, img, user_id, type_id)
                 VALUES (?, ?, 4, 1)';
                 break;
@@ -134,25 +146,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 break;
         }
 
+        $tags = tags_to_array($posts['tags']); //делаем из строки с тегами массив без повторяющихся тегов
 
         $stml = db_get_prepare_stmt($link, $sql, $db_post);
-        
-        $post_id = add_post_to_db($link, $posts['tags'], $stml);
-        
-        if ($post_id !== 'Что-то пошло не так') {
 
+        $post_id = add_post_to_db($link, $stml);
+
+        $result = add_tags_to_posts($link, $tags, $post_id);
+        
+        if ($result) {
             header("Location: post.php?post_id=" . $post_id);
-        } else {
-            $errors['sql'] = 'Ошибка загрузки поста';
         }
     }
 }
 
-$page_parameters['name'] = set_russian_form_name($page_parameters['form-type']); //названия для формы формы
+$page_parameters['name'] = get_russian_form_name($page_parameters['form-type']); //названия для формы формы
 
-if ($page_parameters['form-type'] === 'photo') {
-    $file_upload_input = include_template('add-post/add-photo-drag-n-drop.php', []);
-}
 
 $content = include_template("add-post/add-" . $page_parameters['form-type'] . "-post.php", [
     'errors' => $errors
@@ -162,7 +171,6 @@ $page_content = include_template('add-post.php', [
     'content' => $content,
     'types' => posts_categories($link),
     'page_parameters' => $page_parameters,
-    'file_upload_input' => $file_upload_input,
     'errors' => $errors
 ]);
 
@@ -174,3 +182,4 @@ $layout_content = include_template('layout.php', [
 ]);
 
 print($layout_content);
+print_r($stml);

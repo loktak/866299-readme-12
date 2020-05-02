@@ -310,187 +310,70 @@ function getPostValue($name)
     return $_POST[$name] ?? "";
 }
 
-
-//* Функция проверяет что такое видео есть на youtube и оно доступно
-function chek_video_url($youtube_url)
+/** Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов 
+ * @param mysqli $link
+ * @param array $tags подготовленный массив с тегами
+*/
+function add_tags_to_db($link, $tags)
 {
-    $filtred_url = filter_var($youtube_url);
-    if ($filtred_url != NULL) {
-        $result = check_youtube_url($filtred_url);
-    } else {
-        $result = 'ошибка';
-    }
-    return $result;
-}
-
-
-/** Функция проверяет заполнены ли поля формы по указаным ключам
- * @param array $required_fields
- * 
- * @return array массив данных
- */
-function not_empty($required_fields)
-{
-    $errors = [];
-    foreach ($required_fields as $key => $field) {
-        if (empty($_POST[$field])) {
-            $errors[$field] = "Поле должно быть заполнено";
-        }
-    }
-    return $errors;
-}
-
-/** Функция проверяет ошибки по соответствующим ключам и записывает их в массив
- * @param array $rules массив со значениями которые надо проверить
- * @param array $errors массив с уже существующими ошибками
- * 
- * @return array массив данных с ошибками
- */
-function check_rules($rules, $errors)
-{
-    foreach ($_POST as $key => $value) {
-        if (empty($errors[$key])) {
-            if (isset($rules[$key])) {
-                $rule = $rules[$key];
-                $errors[$key] = $rule();
+    $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
+    foreach ($tags as $tag) {
+        $search_sql = "SELECT h.id FROM hashtags h WHERE h.title = '$tag'";
+        $search_result = get_data($link, $search_sql)[0] ?? NULL;
+        if (!empty($search_result)) {
+            $tags_id[] = $search_result['id'];
+        } else {
+            $values['title'] = $tag;
+            $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
+            $result = mysqli_stmt_execute($tag_stml);
+            if ($result) {
+                $tags_id[] = mysqli_insert_id($link);
+            } else {
+                return 'не удалось добавить теги' . mysqli_error($link);
             }
         }
     }
-    return $errors;
+    return $tags_id;
 }
 
-/** Функция поле тэги на соответсвтие тз
- * @param string $tags строчка тегов
- * 
- * @return string Ошибку если валидация не прошла
- */
-function check_tags($tags)
-{
-    $tags_array = [];
-    $tags_array = explode(" ", $tags);
-    if (preg_match('/[^a-zа-я ]+/msiu', $tags)) {
-        return 'Теги должны состоять только из букв.';
+function add_post_to_db($link, $stml) {
+    $result = mysqli_stmt_execute($stml);
+    if ($result) {
+        return mysqli_insert_id($link);
     } else {
-        foreach ($tags_array as $tag) {
-            if (mb_strlen($tag) > 20) {
-                return 'Используется слишком длинный тег. Подберите синоним или убедитесь что тег состоит из одного слова';
-            }
-        }
+        return 'не удалось добавить пост' . mysqli_error($link);
     }
 }
 
-/** Функция проверяет текст на колличество символов в нем, и выводит сообщение если проверка не прошла
- * @param string $text сам текст
- * @param int $min минимальное значение символов
- * @param int $max максимальное значение символов
+/** Добавления поста вместе с тегами
+ * @param mysqli $link
+ * @param string $tags массив с тегами
+ * @param int $post_id айди добавленного поста
  * 
- * @return string Ошибку если валидация не прошла
+ * @return string $post_id айди поста или ошибку
  */
-function validate_lenght($text, $min = 3, $max = 25)
+function add_tags_to_posts($link, $tags, $post_id)
 {
-    if (mb_strlen($text) < $min || mb_strlen($text) > $max) {
-        return "Значение поля должно быть не меньше $min и не больше $max символов";
+    $tags_id = add_tags_to_db($link, $tags);
+    foreach ($tags_id as $tag_id) {
+        $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
+        $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
+        $result = mysqli_stmt_execute($tag_post_stml);
     }
-}
-
-/** Функция проверяет ссылку с помощью filter_var
- * @param string $url ссылка
- * 
- * @return string Ошибку если валидация не прошла
- */
-function check_url($url)
-{
-    if (!filter_var($url, FILTER_VALIDATE_URL)) {
-        return "Формат ссылки не верен.";
-    }
-}
-
-/** Функция проверяет доступно ли видео по ссылке на youtube
- * @param string $url ссылка на видео
- * 
- * @return string Ошибку если валидация не прошла
- */
-function check_youtube_link($url)
-{
-    $id = extract_youtube_id($url);
-    $headers = get_headers('https://www.youtube.com/oembed?format=json&url=http://www.youtube.com/watch?v=' . $id);
-    if (is_array($headers)) {
-        preg_match('/^HTTP\\/\\d+\\.\\d+\\s+2\\d\\d\\s+.*$/', $headers[0]);
-        $err_flag = strpos($headers[0], '200') ? '200' : '404';
-    }
-    if ($err_flag != 200) {
-        return "Видео по такой ссылке не найдено. Проверьте ссылку на видео";
-    }
-}
-
-/** Функция проверяет файл по ссылке. и если он соответствует критериям загружает его в папку uploads
- * @param string $url ссылка на сайт
- * 
- * @return string Ошибку если валидация не прошла
- */
-function get_img_by_link($url)
-{
-    if (file_get_contents($url)) {  //@question даже валидная ссылка, если она не содержит в себе файла будет вызывать варнинг. как от него избавится без использования запрещенных @. Такая проверка обязаетльна по ТЗ
-        $file_name = basename($url);
-        $file_path = __DIR__ . "/uploads/" . $file_name;
-        $file_info = new finfo(FILEINFO_MIME_TYPE);
-
-        $mime_type = $file_info->buffer(file_get_contents($url));
-        if ($mime_type !== 'image/png' && $mime_type !== 'image/jpeg' && $mime_type !== 'image/gif') {
-            return "Не подходящий формат изображения. Используйте jpg, png или gif";
-        } else {
-            file_put_contents($file_path, file_get_contents($url));
-        }
+    if ($result) {
+        return $result;
     } else {
-        return 'Файл по данной ссылке не найден';
+        return "Ошибка" . mysqli_error($link);
     }
 }
 
-/** Функция проверяет файл загруженный через форму обратной связи. и если он соответствует критериям загружает его в папку uploads
- * @param array $files массив данных о файле
- * 
- * @return string Ошибку если валидация не прошла
- */
-function upload_post_picture($files)
-{
-    if (($files['picture']['size'] < 5242880)) {
-        $file_name = $files['picture']['name'];
-        $file_path = __DIR__ . '/uploads/';
-        if ($files['picture']['type'] !== 'image/png' && $files['picture']['type'] !== 'image/jpeg' && $files['picture']['type'] !== 'image/gif') {
-            return 'Не подходящий формат прикрепленного изображения. Используйте jpg, png или gif. или воспользуйтесь ссылкой';
-        } else {
-            move_uploaded_file($files['picture']['tmp_name'], $file_path . $file_name);
-        }
-    } else {
-        return 'прикрепленный файл слишком большой';
-    }
-}
-
-/** Функция определяет как будет выглядеть путь до загруженного файла в зависимости от того был ли он загружен через форму или ссылкой
- * @param string $url ссылка на файл
- * @param array $files массив данных о файле
- * 
- * @return string $file_path путь до файла
- */
-function get_file_path($url, $files)
-{
-    if (!empty($files['picture']['name'])) {
-        $file_name = $files['picture']['name'];
-    } else {
-        $file_name = basename($url);
-    }
-    $file_path = "uploads/" . $file_name;
-    return $file_path;
-}
-
-
-/** Функция выводит русское название в соответствии со значением анлийкого
+/** Функция выводит русское название в соответствии со значением английкого
  * @param string $text
  * 
  * @return string $russian_form_name название на русском
  */
 
-function set_russian_form_name($text)
+function get_russian_form_name($text)
 {
     switch ($text) { //делаем нормальные имена вкладкам
         case 'photo':
@@ -511,50 +394,3 @@ function set_russian_form_name($text)
     }
     return $russian_form_name;
 }
-
-
-/**
- * Добавления поста вместе с тегами если есть.
- * @param mysqli $link
- * @param string $tags_line строчка с тегами
- * @return mysqli_stmt $stml Подготовленное выражение
- * 
- * @return string $post_id айди поста или ошибку
- */
-function add_post_to_db($link, $tags_line, $stml)
-{
-    
-    $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
-    $result = mysqli_stmt_execute($stml);
-    if ($result) {
-        $post_id = mysqli_insert_id($link);
-    }
-    if ($tags_line !== NULL) {
-        $tags_line = anti_xss($tags_line);
-        $tags_line = trim($tags_line);
-        $tags_line = mb_strtolower($tags_line);
-        $tags = explode(" ", $tags_line);
-        foreach ($tags as $tag) { 
-            $search_sql = "SELECT h.id FROM hashtags h WHERE h.title = '$tag'";
-            $search_result = get_data($link, $search_sql)[0];
-            if (!empty($search_result)) {
-                $tag_id = $search_result['id'];
-            } else {
-                $values['title'] = $tag;
-                $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
-                $result = mysqli_stmt_execute($tag_stml);
-                $tag_id = mysqli_insert_id($link);
-            }
-            $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
-            $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
-            $result = mysqli_stmt_execute($tag_post_stml);
-        }
-    }
-    if ($result) {
-        return $post_id;
-    } else {
-        return 'Что-то пошло не так';
-    }
-    
-}
-

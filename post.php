@@ -37,10 +37,10 @@ if (isset($_GET['post_id'])) {
             'user_posts' => $user_posts
         ]);
     } else {
-        $page_content = include_template('post404.php', []);
+        $page_content = include_template('post/post404.php', []);
     }
 } else {
-    $page_content = include_template('post404.php', []);
+    $page_content = include_template('post/post404.php', []);
 }
 
 $layout_content = include_template('layout.php', [

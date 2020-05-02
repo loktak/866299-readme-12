@@ -1,7 +1,7 @@
 <div class="adding-post__input-wrapper form__textarea-wrapper">
   <label class="adding-post__label form__label" for="cite-text">Текст цитаты <span class="form__input-required">*</span></label>
   <div class="form__input-section <?= (!empty($errors['cite-text'])) ? "form__input-section--error" : "" ?>">
-    <textarea class="adding-post__textarea adding-post__textarea--quote form__textarea form__input" id="cite-text" name="cite-text" placeholder="Текст цитаты" ><?= getPostValue('cite-text') ?></textarea>
+    <textarea class="adding-post__textarea adding-post__textarea--quote form__textarea form__input" id="cite-text" name="cite-text" placeholder="Текст цитаты" ><?= anti_xss(getPostValue('cite-text')) ?></textarea>
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
       <h3 class="form__error-title">Обнаружена ошибка</h3>
@@ -12,7 +12,7 @@
 <div class="adding-post__textarea-wrapper form__input-wrapper">
   <label class="adding-post__label form__label" for="quote-author">Автор <span class="form__input-required">*</span></label>
   <div class="form__input-section <?= (!empty($errors['quote-author'])) ? "form__input-section--error" : "" ?>">
-    <input class="adding-post__input form__input" id="quote-author" type="text" name="quote-author" placeholder="Введите автора цитаты" value="<?= getPostValue('quote-author') ?>">
+    <input class="adding-post__input form__input" id="quote-author" type="text" name="quote-author" placeholder="Введите автора цитаты" value="<?= anti_xss(getPostValue('quote-author')) ?>">
     <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
     <div class="form__error-text">
       <h3 class="form__error-title">Обнаружена ошибка</h3>

@@ -28,7 +28,7 @@
                       <div class="adding-post__input-wrapper form__input-wrapper">
                         <label class="adding-post__label form__label" for="heading">Заголовок <span class="form__input-required">*</span></label>
                         <div class="form__input-section <?= (!empty($errors['heading'])) ? "form__input-section--error" : "" ?>">
-                          <input class="adding-post__input form__input" id="heading" type="text" name="heading" placeholder="Введите заголовок" value="<?= getPostValue('heading') ?>">
+                          <input class="adding-post__input form__input" id="heading" type="text" name="heading" placeholder="Введите заголовок" value="<?= anti_xss(getPostValue('heading')) ?>">
                           <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
                           <div class="form__error-text">
                             <h3 class="form__error-title">Обнаружена ошибка</h3>
@@ -40,7 +40,7 @@
                       <div class="adding-post__input-wrapper form__input-wrapper">
                         <label class="adding-post__label form__label" for="tags">Теги</label>
                         <div class="form__input-section <?= (!empty($errors['tags'])) ? "form__input-section--error" : "" ?>">
-                          <input class="adding-post__input form__input" id="tags" type="text" name="tags" placeholder="Введите теги" value="<?= getPostValue('tags') ?>">
+                          <input class="adding-post__input form__input" id="tags" type="text" name="tags" placeholder="Введите теги" value="<?= anti_xss(getPostValue('tags')) ?>">
                           <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
                           <div class="form__error-text">
                             <h3 class="form__error-title">Обнаружена ошибка</h3>
@@ -58,7 +58,7 @@
                       </ul>
                     </div>
                   </div>
-                  <?= $file_upload_input ?>
+                  <?= ($page_parameters['form-type'] === 'photo') ? include_template('add-post/add-photo-drag-n-drop.php', []) : "" ?>
                   <div class="adding-post__buttons">
                     <button class="adding-post__submit button button--main" type="submit">Опубликовать</button>
                     <a class="adding-post__close" href="#">Закрыть</a>
