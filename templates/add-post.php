@@ -28,7 +28,7 @@
                       <div class="adding-post__input-wrapper form__input-wrapper">
                         <label class="adding-post__label form__label" for="heading">Заголовок <span class="form__input-required">*</span></label>
                         <div class="form__input-section <?= (!empty($errors['heading'])) ? "form__input-section--error" : "" ?>">
-                          <input class="adding-post__input form__input" id="heading" type="text" name="heading" placeholder="Введите заголовок" value="<?= anti_xss(getPostValue('heading')) ?>">
+                          <input class="adding-post__input form__input" id="heading" type="text" name="heading" placeholder="Введите заголовок" value="<?= getPostValue('heading') ?>">
                           <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
                           <div class="form__error-text">
                             <h3 class="form__error-title">Обнаружена ошибка</h3>
@@ -40,7 +40,7 @@
                       <div class="adding-post__input-wrapper form__input-wrapper">
                         <label class="adding-post__label form__label" for="tags">Теги</label>
                         <div class="form__input-section <?= (!empty($errors['tags'])) ? "form__input-section--error" : "" ?>">
-                          <input class="adding-post__input form__input" id="tags" type="text" name="tags" placeholder="Введите теги" value="<?= anti_xss(getPostValue('tags')) ?>">
+                          <input class="adding-post__input form__input" id="tags" type="text" name="tags" placeholder="Введите теги" value="<?= getPostValue('tags') ?>">
                           <button class="form__error-button button" type="button">!<span class="visually-hidden">Информация об ошибке</span></button>
                           <div class="form__error-text">
                             <h3 class="form__error-title">Обнаружена ошибка</h3>

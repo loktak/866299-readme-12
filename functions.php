@@ -301,19 +301,21 @@ function set_url($type, $sort_value, $sorting, $page_url = "index.php")
 
 /**
  * Функция создает значение на основании того есть ли такое значение в POST запросе
- * @param string $name 
+ * @param string $name название поля по которому ищем
  * 
  * @return string значение из POST запроса
  */
 function getPostValue($name)
 {
-    return $_POST[$name] ?? "";
+    $result = $_POST[$name] ?? "";
+    return anti_xss($result);
 }
 
-/** Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов 
+/** 
+ * Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов 
  * @param mysqli $link
  * @param array $tags подготовленный массив с тегами
-*/
+ */
 function add_tags_to_db($link, $tags)
 {
     $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
@@ -336,21 +338,22 @@ function add_tags_to_db($link, $tags)
     return $tags_id;
 }
 
-function add_post_to_db($link, $stml) {
+function add_post_to_db($link, $stml)
+{
     $result = mysqli_stmt_execute($stml);
-    if ($result) {
-        return mysqli_insert_id($link);
-    } else {
+    if (!$result) {
         return 'не удалось добавить пост' . mysqli_error($link);
     }
+    return mysqli_insert_id($link);
 }
 
-/** Добавления поста вместе с тегами
+/** 
+ * Добавления поста вместе с тегами
  * @param mysqli $link
- * @param string $tags массив с тегами
+ * @param array $tags массив с тегами
  * @param int $post_id айди добавленного поста
  * 
- * @return string $post_id айди поста или ошибку
+ * @return boolean $post_id айди поста или ошибку
  */
 function add_tags_to_posts($link, $tags, $post_id)
 {
@@ -359,15 +362,18 @@ function add_tags_to_posts($link, $tags, $post_id)
         $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
         $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
         $result = mysqli_stmt_execute($tag_post_stml);
+        if (!$result) {
+            return 'ошбика' . mysqli_error($link);
+            break;
+        }
     }
-    if ($result) {
-        return $result;
-    } else {
-        return "Ошибка" . mysqli_error($link);
-    }
+    return $result;
 }
 
-/** Функция выводит русское название в соответствии со значением английкого
+
+
+/** 
+ * Функция выводит русское название в соответствии со значением английкого
  * @param string $text
  * 
  * @return string $russian_form_name название на русском
