@@ -17,6 +17,43 @@ function check_required_fields($required_fields)
   return $errors;
 }
 
+/**
+ * Функция определяет название поля на русском, согласно его английскому названию
+ * @param string $english_name английское название
+ * 
+ * @return string $name Русское название; 
+ */
+function get_field_name($english_name) {
+  switch ($english_name) {
+    case 'heading' :
+      $name = 'Заголовок';
+    break;
+    case 'photo-url' :
+      $name = 'Ссылка из интеренета';
+    break;
+    case 'video-url' :
+      $name = 'Ссылка youtube';
+    break;
+    case 'post-text' :
+      $name = 'Текст поста';
+    break;
+    case 'cite-text' :
+      $name = 'Текст цитаты';
+    break;
+    case 'quote-author' :
+      $name = 'Автор';
+    break;
+    case 'post-link' :
+      $name = 'Ссылка';
+    break;
+    case 'tags' :
+      $name = 'Теги';
+    break;
+  }
+  return $name;
+}
+            
+
 /** 
  * Функция проверяет ошибки по соответствующим ключам и записывает их в массив
  * @param array $rules массив со значениями которые надо проверить
@@ -93,10 +130,10 @@ function check_youtube_link($url)
 {
   $id = extract_youtube_id($url);
   $headers = get_headers('https://www.youtube.com/oembed?format=json&url=http://www.youtube.com/watch?v=' . $id);
-  if (!is_array($headers)) { 
+  if (!is_array($headers)) {
     return "Видео по такой ссылке не найдено. Проверьте ссылку на видео";
   }
-  
+
   $err_flag = strpos($headers[0], '200') ? 200 : 404;
 
   if ($err_flag !== 200) {
@@ -112,20 +149,26 @@ function check_youtube_link($url)
  */
 function get_img_by_link($url)
 {
-  $contetn = file_get_contents($url);
-  if (!$contetn) { 
+  ob_start();
+  $content = file_get_contents($url);
+  ob_get_clean();
+  
+  if (!$content) {
     return 'Файл по данной ссылке не найден';
   }
-    $file_name = basename($url);
-    $file_path = __DIR__ . "/uploads/" . $file_name;
-    $file_info = new finfo(FILEINFO_MIME_TYPE);
+  $url_with_parameters = explode("?", $url);
+  $url = $url_with_parameters[0];
+  $file_name = basename($url);
+  $file_path = __DIR__ . "/uploads/" . $file_name;
+  $file_info = new finfo(FILEINFO_MIME_TYPE);
 
-    $mime_type = $file_info->buffer($contetn);
-    $valid_mime_types = ['image/png', 'image/jpeg', 'image/gif'];
-    if (!in_array($mime_type, $valid_mime_types)) {
-      return "Не подходящий формат изображения. Используйте jpg, png или gif";
-    } 
-    file_put_contents($file_path, $contetn); 
+  $mime_type = $file_info->buffer($content);
+  $valid_mime_types = ['image/png', 'image/jpeg', 'image/gif'];
+  if (!in_array($mime_type, $valid_mime_types)) {
+    return "Не подходящий формат изображения. Используйте jpg, png или gif";
+  }
+  file_put_contents($file_path, $content);
+  
 }
 
 /** 

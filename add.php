@@ -14,7 +14,7 @@ $posts = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $page_parameters['form-type'] = $_POST['form-type'];
     $posts = $_POST;
-    $required_fields = ['heading', 'tags'];
+    $required_fields = ['heading'];
     $rules = [
         'heading' => function () {
             return validate_lenght($_POST['heading']);
@@ -81,22 +81,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]
             );
     }
+    $required_fields[] = 'tags'; //сделано специально, что бы ошибка о незаполнености тегов была в самом низу. Для удобства читаемости
 
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
 
     $errors = check_rules($rules, $errors, $posts); // проверка на rules
 
-    if (!empty($_FILES['picture']['name'])) {  //определяем каким способом был загружен файл если с помощью формы то выполняем одну функцию если нет то смотрим по ссылке
-        $errors['input-file'] = upload_post_picture($files);
-    } else if (isset($_POST['photo-url']) && empty($errors['photo-url'])) {
-        $errors['photo-url'] = get_img_by_link($_POST['photo-url']);
-    }
+    
 
     if ($_POST['form-type'] === 'video' && empty($errors['video-url'])) {  // если иных ошибок не найдено проверяем что ссылка ведет на youtube
         $errors['video-url'] = check_youtube_link($_POST['video-url']);
     }
 
-    $errors = array_filter($errors); // выводим массив с ошибками
+    if (empty(array_filter($errors))) {
+        if (!empty($_FILES['picture']['name'])) {  //определяем каким способом был загружен файл если с помощью формы то выполняем одну функцию если нет то смотрим по ссылке
+            $errors['input-file'] = upload_post_picture($files);
+        } else if (isset($_POST['photo-url'])) {
+            $errors['photo-url'] = get_img_by_link($_POST['photo-url']);
+        }
+    }
+    
+    $errors = array_filter($errors);
 
     if (empty($errors)) { // если массив c ошибками пустой
         $user_id = 4;

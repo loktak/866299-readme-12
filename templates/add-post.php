@@ -52,8 +52,8 @@
                     <div class="form__invalid-block <?= (empty($errors)) ? 'visually-hidden' : "" ?>">
                       <b class="form__invalid-slogan">Пожалуйста, исправьте следующие ошибки:</b>
                       <ul class="form__invalid-list">
-                      <?php foreach (array_filter($errors) as $error) : ?> 
-                        <li class="form__invalid-item"><?= $error ?></li>
+                      <?php foreach ($errors as $key => $error) : ?> 
+                        <li class="form__invalid-item"><?= get_field_name($key) . ": " . $error ?></li>
                       <?php endforeach ?>
                       </ul>
                     </div>
