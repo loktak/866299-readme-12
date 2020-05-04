@@ -262,7 +262,7 @@ function get_post_info($link, $post_id)
    WHERE p.id = $post_id
    GROUP BY l.post_id";
     $result = get_data($link, $sql);
-    
+
     return empty($result) ? NULL : $result;
 }
 
@@ -290,11 +290,113 @@ function get_user_posts_count($link, $user_id)
 function set_url($type, $sort_value, $sorting, $page_url = "index.php")
 {
     $params = $_GET;
-    
+
     $params['type'] = $type;
     $params['sort_value'] = $sort_value;
     $params['sorting'] = $sorting;
     $querry = http_build_query($params);
     $url = "/" . $page_url . "?" . $querry;
     return $url;
+}
+
+/**
+ * Функция создает значение на основании того есть ли такое значение в POST запросе
+ * @param string $name название поля по которому ищем
+ * 
+ * @return string значение из POST запроса
+ */
+function getPostValue($name)
+{
+    $result = $_POST[$name] ?? "";
+    return anti_xss($result);
+}
+
+/** 
+ * Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов 
+ * @param mysqli $link
+ * @param array $tags подготовленный массив с тегами
+ */
+function add_tags_to_db($link, $tags)
+{
+    $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
+    foreach ($tags as $tag) {
+        $search_sql = "SELECT h.id FROM hashtags h WHERE h.title = '$tag'";
+        $search_result = get_data($link, $search_sql)[0] ?? NULL;
+        if (!empty($search_result)) {
+            $tags_id[] = $search_result['id'];
+        } else {
+            $values['title'] = $tag;
+            $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
+            $result = mysqli_stmt_execute($tag_stml);
+            if ($result) {
+                $tags_id[] = mysqli_insert_id($link);
+            } else {
+                return 'не удалось добавить теги' . mysqli_error($link);
+            }
+        }
+    }
+    return $tags_id;
+}
+
+function add_post_to_db($link, $stml)
+{
+    $result = mysqli_stmt_execute($stml);
+    if (!$result) {
+        return 'не удалось добавить пост' . mysqli_error($link);
+    }
+    return mysqli_insert_id($link);
+}
+
+/** 
+ * Добавления поста вместе с тегами
+ * @param mysqli $link
+ * @param array $tags массив с тегами
+ * @param int $post_id айди добавленного поста
+ * 
+ * @return boolean $post_id айди поста или ошибку
+ */
+function add_tags_to_posts($link, $tags, $post_id)
+{
+    $tags_id = add_tags_to_db($link, $tags);
+    foreach ($tags_id as $tag_id) {
+        $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
+        $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
+        $result = mysqli_stmt_execute($tag_post_stml);
+        if (!$result) {
+            return 'ошбика' . mysqli_error($link);
+            break;
+        }
+    }
+    return $result;
+}
+
+
+
+/** 
+ * Функция выводит русское название в соответствии со значением английкого
+ * @param string $text
+ * 
+ * @return string $russian_form_name название на русском
+ */
+
+function get_russian_form_name($text)
+{
+    switch ($text) { //делаем нормальные имена вкладкам
+        case 'photo':
+            $russian_form_name = 'изображения';
+
+            break;
+        case 'video':
+            $russian_form_name = 'видео';
+            break;
+        case 'text':
+            $russian_form_name = 'текстового поста';
+            break;
+        case 'link':
+            $russian_form_name = 'ссылки';
+            break;
+        case 'quote':
+            $russian_form_name = 'цитаты';
+    }
+    return $russian_form_name;
 }
