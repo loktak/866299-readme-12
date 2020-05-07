@@ -49,6 +49,20 @@ function get_field_name($english_name) {
     case 'tags' :
       $name = 'Теги';
     break;
+    case 'email' :
+      $name = 'Электронная почта';
+    break;
+    case 'login' :
+      $name = 'Логин';
+    break;
+    case 'password' :
+      $name = 'Пароль';
+    break;
+    case 'password-repeat' :
+      $name = 'Повтор пароля';
+    break;
+    case 'input-file' :
+      $name = 'Прикрепленное изображение';
   }
   return $name;
 }
@@ -119,6 +133,20 @@ function check_url($url)
     return "Формат ссылки не верен.";
   }
 }
+
+/** 
+ * Функция проверяет email с помощью filter_var
+ * @param string $email ссылка
+ * 
+ * @return string Ошибку если валидация не прошла
+ */
+function check_email($email)
+{
+  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return 'Введите корректный адреc электронной почты. Пример: email@example.com';
+  }
+}
+
 
 /** 
  * Функция проверяет доступно ли видео по ссылке на youtube
@@ -193,16 +221,16 @@ function get_file_path($url, $file_name)
  * 
  * @return string Ошибку если валидация не прошла
  */
-function upload_post_picture($files)
+function upload_post_picture($files, $folder = '/uploads/')
 {
   if (($files['picture']['size'] >= 104857600)) {
     return 'прикрепленный файл слишком большой';
   }
   $file_name = $files['picture']['name'];
-  $file_path = __DIR__ . '/uploads/';
+  $file_path = __DIR__ . $folder;
   $valid_mime_types = ['image/png', 'image/jpeg', 'image/gif'];
-  if (!in_array($files['picture']['type'], $valid_mime_types)) {
-    return 'Не подходящий формат прикрепленного изображения. Используйте jpg, png или gif. или воспользуйтесь ссылкой';
+  if (!in_array(mime_content_type($files['picture']['tmp_name']), $valid_mime_types)) {
+    return 'Не подходящий формат прикрепленного изображения. Используйте jpg, png или gif.';
   }
   move_uploaded_file($files['picture']['tmp_name'], $file_path . $file_name);
 }
@@ -220,4 +248,65 @@ function tags_to_array($tags_line)
   $tags_line = mb_strtolower($tags_line);
   $tags = explode(" ", $tags_line);
   return array_unique($tags, SORT_STRING);
+}
+
+/**
+ * Функция проверяет введенный адрсе электронной почты на соответствие формату и на наличие такого адреса в базе данных
+ * @param mysqli $link
+ * @param string $email адрес электронной почты
+ * 
+ * @return string Ошибки если валидация не прошла
+ */
+function email_validation($link, $email) {
+  $email = trim($email);
+  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return 'Введите корректный адрсе электронной почты. Пример: email@example.com';
+  } 
+  $search_sql = "
+  SELECT u.* 
+  FROM users u
+  WHERE u.email = '$email'";
+  $found_user = get_data($link, $search_sql);
+  if (!empty($found_user)) {
+    return 'Пользователь с таким адрессом электронной почты уже зарагестрирован. Возможно это вы. Попробуйте войти';
+  } 
+}
+
+/**
+ * Функция проверяет введенный логин. На соответствие требованиям по длинне и по наличию такого же логина в базе данных
+ * @param mysqli $link
+ * @param string $login Введенный логин
+ * 
+ * @return string Ошибки если валидация не прошла
+ */
+function login_validation($link, $login) {
+  $chek_lenght = validate_lenght($login, 3, 20);
+  if ($chek_lenght !== NULL) {
+    return $chek_lenght;
+  }
+  if (preg_match('/[^a-zа-я0-9]+/msiu', $login)) {
+    return 'Логин должен состоять только из букв английского или русского алфавита и цифр';
+  }
+
+  $search_sql = "
+  SELECT u.* 
+  FROM users u
+  WHERE u.login = '$login'";
+  $found_user = get_data($link, $search_sql);
+  if (!empty($found_user)) {
+    return "Логин: $login уже занят";
+  } 
+}
+
+/**
+ * Функция сравнивает два значения
+ * @param string $value_one
+ * @param string $value_two
+ * 
+ * @return string Ошибку если не равны
+ */
+function compare_values($value_one, $value_two) { // у меня возник вопрос. теоретически функция может принять два int аргумента и сравнить их, как это можно было бы указать в описании
+  if ($value_one !== $value_two) {
+    return 'Пароли не совпадают';
+  }
 }

@@ -108,7 +108,7 @@
                         <a class="post__author-link" href="#" title="Автор">
                             <div class="post__avatar-wrapper">
                                 <!--укажите путь к файлу аватара-->
-                                <img class="post__author-avatar" src="img/<?= $post['avatar'] ?>" alt="Аватар пользователя">
+                                <img class="post__author-avatar" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя">
                             </div>
                             <div class="post__info">
                                 <b class="post__author-name"><?= anti_xss($post['author_login']) ?></b>
