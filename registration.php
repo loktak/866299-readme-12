@@ -8,10 +8,18 @@ $errors = []; //объявляем массив с ошибками
 
 //проверяем что страница загружена методом POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $registration_data = $_POST; //переносим все значения $_POST в новый массив
+    foreach ($_POST as $key => $value) {
+        $registration_data[$key] = trim($value);
+    }
     $required_fields = ['email', 'login', 'password', 'password-repeat']; //определяем поля для проверки на заполненость
     //определяем список проверок для полей
     $rules =[
+        'email' => function() use (&$link, $registration_data) {
+            return email_validation($link, $registration_data['email']);
+        },
+        'login' => function() use (&$link, $registration_data) {
+            return login_validation($link, $registration_data['login']);
+        },
         'password' => function () {
             return validate_lenght($_POST['password'], 6);
         },
@@ -22,16 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
 
     $errors = check_rules($rules, $errors, $registration_data); // проверка на rules
-    
-    //проверяем валидность адреса почты
-    if (empty($errors['email'])) {
-        $errors['email'] = email_validation($link, $registration_data['email']);
-    }
-    
-    //проверяем валидность логина
-    if (empty($errors['login'])) {
-        $errors['login'] = login_validation($link, $registration_data['login']);
-    }
 
     // если других ошибок нет проверяем наличие прикрепленного файла и загружаем его
     if (empty(array_filter($errors)) && !empty($_FILES['picture']['name'])) {
@@ -45,16 +43,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $file_name = $file['picture']['name'] ?? 'default.jpg';
         $sql = 'INSERT INTO users (email, login, password, avatar) VALUES (?, ?, ?, ?)';
-        $user['email'] = $registration_data['email'];
-        $user['login'] = $registration_data['login'];
-        $user['password'] = password_hash($registration_data['password'], PASSWORD_DEFAULT);
-        $user['avatar'] = $file_name;
+        $user = [
+            'email' => $registration_data['email'],
+            'login' => $registration_data['login'],
+            'password' => password_hash($registration_data['password'], PASSWORD_DEFAULT),
+            'avatar' => $file_name
+        ];
+
         $stml = db_get_prepare_stmt($link, $sql, $user);
         $result = mysqli_stmt_execute($stml);
 
         if ($result) {
             header("Location: index.php");
         }
+        
+        $errors['input-file'] = 'не удалось зарегистрировать нового пользователя' . mysqli_error($link);
     }
 }
 
@@ -64,9 +67,10 @@ $page_content = include_template('registration.php', [
     'errors' => $errors
 ]);
 
-$layout_content = include_template('registration-layout.php', [
+$layout_content = include_template('layout.php', [
     'content' => $page_content,
-    'title' => 'Readme: Регистрация'
+    'title' => 'Readme: Регистрация',
+    'is_auth' => 0
 ]);
 
 print($layout_content);

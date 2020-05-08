@@ -258,14 +258,10 @@ function tags_to_array($tags_line)
  * @return string Ошибки если валидация не прошла
  */
 function email_validation($link, $email) {
-  $email = trim($email);
   if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     return 'Введите корректный адрсе электронной почты. Пример: email@example.com';
   } 
-  $search_sql = "
-  SELECT u.* 
-  FROM users u
-  WHERE u.email = '$email'";
+  $search_sql = "SELECT u.* FROM users u WHERE u.email = '$email'";
   $found_user = get_data($link, $search_sql);
   if (!empty($found_user)) {
     return 'Пользователь с таким адрессом электронной почты уже зарагестрирован. Возможно это вы. Попробуйте войти';
@@ -288,10 +284,7 @@ function login_validation($link, $login) {
     return 'Логин должен состоять только из букв английского или русского алфавита и цифр';
   }
 
-  $search_sql = "
-  SELECT u.* 
-  FROM users u
-  WHERE u.login = '$login'";
+  $search_sql = "SELECT u.* FROM users u WHERE u.login = '$login'";
   $found_user = get_data($link, $search_sql);
   if (!empty($found_user)) {
     return "Логин: $login уже занят";
@@ -300,8 +293,8 @@ function login_validation($link, $login) {
 
 /**
  * Функция сравнивает два значения
- * @param string $value_one
- * @param string $value_two
+ * @param string | int $value_one
+ * @param string | int $value_two
  * 
  * @return string Ошибку если не равны
  */
