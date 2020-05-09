@@ -9,3 +9,9 @@ Thumbs.db
 vendor
 uploads/*
 !uploads/.gitkeep
+userpics/*
+!/userpics/
+!userpics/userpic.jpg
+!userpics/default.jpg
+!userpics/userpic-mark.jpg
+!userpics/userpic-larisa-small.jpg
