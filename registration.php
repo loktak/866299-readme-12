@@ -3,7 +3,6 @@
 require_once('init.php');
 require_once('validation.php');
 
-
 $errors = []; //объявляем массив с ошибками
 
 //проверяем что страница загружена методом POST
@@ -25,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         },
         'password-repeat' => function () {
             return compare_values($_POST['password-repeat'], $_POST['password']);
-        },
+        }
     ];
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
 

@@ -71,20 +71,20 @@
                         </blockquote>
                     <?php elseif ($post['icon_type'] === 'photo') : ?>
                         <div class="post-photo__image-wrapper">
-                            <img src="<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
+                            <img src="uploads/<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
                         </div>
                     <?php elseif ($post['icon_type'] === 'link') : ?>
                         <div class="post-link__wrapper">
                             <a class="post-link__external" href="<?= anti_xss($post['link']) ?>" title="Перейти по ссылке">
                                 <div class="post-link__info-wrapper">
                                     <div class="post-link__icon-wrapper">
-                                        <img src="https://www.google.com/s2/favicons?domain=vitadental.ru" alt="Иконка">
+                                        <img src="https://www.google.com/s2/favicons?domain=<?= $post['link']?>" alt="Иконка">
                                     </div>
                                     <div class="post-link__info">
-                                        <h3><?= crop_text(anti_xss($post['title']), 20) ?></h3>
+                                        <h3><?= anti_xss($post['title']) ?></h3>
                                     </div>
                                 </div>
-                                <span><?= anti_xss($post['link']) ?></span>
+                                <span><?= mb_strimwidth(anti_xss($post['link']), 0, 34, "...") ?></span>
                             </a>
                         </div>
                     <?php elseif ($post['icon_type'] === 'video') : ?>
@@ -100,19 +100,18 @@
                             </a>
                         </div>
                     <?php else : ?>
-                        <?php crop_text(anti_xss($post['content_text'])) ?>
+                        <?= crop_text(anti_xss($post['content_text']), $post['id']) ?>
                     <?php endif; ?>
                 </div>
                 <footer class="post__footer">
                     <div class="post__author">
                         <a class="post__author-link" href="#" title="Автор">
                             <div class="post__avatar-wrapper">
-                                <!--укажите путь к файлу аватара-->
-                                <img class="post__author-avatar" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя">
+                                <img class="post__author-avatar" width="40px" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя">
                             </div>
                             <div class="post__info">
                                 <b class="post__author-name"><?= anti_xss($post['author_login']) ?></b>
-                                <?php $post_date = get_post_time($index); ?>
+                                <?php $post_date = new DateTime($post['post_date']); ?>
                                 <time class="post__time" title="<?= $post_date->format('d.m.Y H:i') ?>" datetime="<?= $post_date->format('Y-m-d H:i:s') ?>"><?= time_ago($post_date) ?></time>
                             </div>
                         </a>

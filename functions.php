@@ -35,11 +35,14 @@ function include_template($name, $data)
 
 
  * @param string $text
+ * @param $post_id айди поста для ссылки
  * @param int $symbols
+ * 
+ * 
  * @return string
  * @author Arseny Spirin <spirinars@ya.ru>
  */
-function crop_text($text, $symbols = 300)
+function crop_text($text, $post_id, $symbols = 300)
 {
 
     $words = explode(" ", $text);
@@ -60,13 +63,14 @@ function crop_text($text, $symbols = 300)
 
     if ($text_lenght > $symbols) {
         $text .= "...";
-        $post_full_text_link = '<a class="post-text__more-link" "href="#">Читать далее</a>';
+        $post_full_text_link = '<a class="post-text__more-link" href="post.php?post_id=' . $post_id . '">Читать далее</a>';
         $post_text = "<p>" . $text . "</p>" . $post_full_text_link;
         print($post_text);
     } else {
         print($post_text);
     }
 }
+
 
 /** 
  *This function replaces special characters with mnemonic characters 
@@ -229,6 +233,55 @@ function popular_posts_category_sorting($link, $type, $sort_value = 'views', $so
 }
 
 /**
+ * Функция вызывает список постов от пользователь на которых подписан юзер и сортирует их по дате
+ * @param mysqli $link
+ * @param int $user_id айди юзера
+ * 
+ * @return array двумерный массив данных
+ */
+function get_posts_for_feed($link, $user_id)
+{
+    $sql = "SELECT DISTINCT p.*, u.login AS author_login, ct.icon_type AS type, u.avatar,
+    IFNULL((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
+    IFNULL((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments_count
+    FROM posts p
+    JOIN subscriptions sub ON sub.userto_id = p.user_id
+    JOIN users u ON u.id = p.user_id
+    JOIN content_type ct ON ct.id = p.type_id
+    LEFT JOIN likes l ON l.post_id = p.id
+    LEFT JOIN comments com ON com.post_id = p.id
+    WHERE sub.user_id = $user_id
+    ORDER BY p.post_date DESC";
+
+    return get_data($link, $sql);
+}
+
+/**
+ * Функция вызывает список постов от пользователь на которых подписан + учитывает тип поста юзер и сортирует их по дате
+ * @param mysqli $link
+ * @param int $user_id айди юзера
+ * @param string название категории
+ * 
+ * @return array двумерный массив данных
+ */
+function get_posts_for_feed_by_category($link, $user_id, $category)
+{
+    $sql = "SELECT DISTINCT p.*, u.login AS author_login, ct.icon_type AS type, u.avatar,
+    IFNULL((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
+    IFNULL((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments_count
+    FROM posts p
+    JOIN subscriptions sub ON sub.userto_id = p.user_id
+    JOIN users u ON u.id = p.user_id
+    JOIN content_type ct ON ct.id = p.type_id
+    LEFT JOIN likes l ON l.post_id = p.id
+    LEFT JOIN comments com ON com.post_id = p.id
+    WHERE sub.user_id = $user_id AND ct.icon_type = '$category'
+    ORDER BY p.post_date DESC";
+
+    return get_data($link, $sql);
+}
+
+/**
  * Функция вызывает список категорий
  * @param mysqli $link
  * 
@@ -267,6 +320,26 @@ function get_post_info($link, $post_id)
 }
 
 /**
+ * Функция вызывает список комментариев к определенному посту
+ * @param mysqli $link
+ * @param int $post_id айди поста
+ * 
+ * @return array двумерный массив данных
+ */
+function get_post_comments($link, $post_id)
+{
+    $sql = "SELECT com.*, u.login AS author, u.avatar
+    FROM comments com
+    JOIN posts p ON p.id = com.post_id
+    JOIN users u ON u.id = com.user_id
+    WHERE com.post_id = $post_id
+    ORDER BY comment_date ASC";
+
+    return get_data($link, $sql);
+}
+
+
+/**
  * Функция список постов одного пользователя по id пользователя.
  * @param mysqli $link
  * @param string $user_id id пользователя
@@ -287,7 +360,7 @@ function get_user_posts_count($link, $user_id)
  *
  * @return array двумерный массив данных
  */
-function set_url($type, $sort_value, $sorting, $page_url = "index.php")
+function set_url($type, $sort_value, $sorting, $page_url = "popular.php")
 {
     $params = $_GET;
 
@@ -315,6 +388,8 @@ function getPostValue($name)
  * Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов 
  * @param mysqli $link
  * @param array $tags подготовленный массив с тегами
+ * 
+ * @return array массив с данными
  */
 function add_tags_to_db($link, $tags)
 {
@@ -338,6 +413,13 @@ function add_tags_to_db($link, $tags)
     return $tags_id;
 }
 
+/**
+ * Функция добавляет пост в базу данных
+ * @param mysqli $link
+ * @param mysqli $stml подготовленное выражение
+ * 
+ * @return int id поста
+ */
 function add_post_to_db($link, $stml)
 {
     $result = mysqli_stmt_execute($stml);
@@ -399,4 +481,34 @@ function get_russian_form_name($text)
             $russian_form_name = 'цитаты';
     }
     return $russian_form_name;
+}
+
+
+/**
+ * Функция получает данные о пользователе по email'у
+ * @param mysqli $link
+ * @param string $email адрес почты
+ * 
+ * @return array массив с данными о пользователе
+ */
+function get_user_data_by_email($link, $email)
+{
+    $sql = "SELECT * FROM users u WHERE u.email = '$email'";
+    $result = get_data($link, $sql);
+
+    return empty($result) ? NULL : $result;
+}
+
+/**
+ * Функция получает значения тега title из сайта по ссылке
+ * @param string $url адрес сайта
+ * 
+ * @return string Содержимое тега title из указаного сайта
+ */
+function get_link_title($url)
+{
+    $site = file_get_contents($url);
+    if (preg_match('/<title>([^<]*)<\/title>/', $site, $matches) == 1) {
+        return $matches[1];
+    } 
 }

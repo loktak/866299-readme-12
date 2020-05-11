@@ -106,20 +106,20 @@
             <?php endif ?>
             <div class="header__nav-wrapper">
                 <nav class="header__nav">
-                    <?php if ($is_auth === 1 && $title !== 'Readme: Регистрация') : ?>
+                    <?php if ($_SERVER['REQUEST_URI'] !== '/registration.php') : ?>
                         <ul class="header__my-nav">
                             <li class="header__my-page header__my-page--popular">
-                                <a class="header__page-link header__page-link--active" title="Популярный контент">
+                                <a class="header__page-link <?= ($title === 'Readme: Популярный контент') ? 'header__page-link--active' : "" ?>" title="Популярный контент" href="popular.php">
                                     <span class="visually-hidden">Популярный контент</span>
                                 </a>
                             </li>
                             <li class="header__my-page header__my-page--feed">
-                                <a class="header__page-link" href="feed.html" title="Моя лента">
+                                <a class="header__page-link <?= ($title === 'Readme: Моя лента') ? 'header__page-link--active' : "" ?>" href="feed.php" title="Моя лента">
                                     <span class="visually-hidden">Моя лента</span>
                                 </a>
                             </li>
                             <li class="header__my-page header__my-page--messages">
-                                <a class="header__page-link" href="messages.html" title="Личные сообщения">
+                                <a class="header__page-link <?= ($title === 'Readme: Личные сообщения') ? 'header__page-link--active' : "" ?>" href="messages.php" title="Личные сообщения">
                                     <span class="visually-hidden">Личные сообщения</span>
                                 </a>
                             </li>
@@ -129,11 +129,11 @@
                             <li class="header__profile">
                                 <a class="header__profile-link" href="#">
                                     <div class="header__avatar-wrapper">
-                                        <img class="header__profile-avatar" src="img/userpic-medium.jpg" alt="Аватар профиля">
+                                        <img class="header__profile-avatar" src="userpics/<?= $user_data['avatar'] ?>" alt="Аватар профиля">
                                     </div>
                                     <div class="header__profile-name">
                                         <span>
-                                            <?= $user_name ?>
+                                            <?= $user_data['login'] ?>
                                         </span>
                                         <svg class="header__link-arrow" width="10" height="6">
                                             <use xlink:href="#icon-arrow-right-ad"></use>
@@ -160,7 +160,7 @@
                                             </li>
 
                                             <li class="header__profile-nav-item">
-                                                <a class="header__profile-nav-link" href="#">
+                                                <a class="header__profile-nav-link" href="logout.php">
                                                     <span class="header__profile-nav-text">
                                                         Выход
                                                     </span>
@@ -178,10 +178,10 @@
                     <?php if ($title === 'Readme: Регистрация') : ?>
                         <ul class="header__user-nav">
                             <li class="header__authorization">
-                                <a class="header__user-button header__authorization-button button" href="login.html">Вход</a>
+                                <a class="header__user-button header__authorization-button button" href="index.php">Вход</a>
                             </li>
                             <li>
-                                <a class="header__user-button header__user-button--active header__register-button button">Регистрация</a>
+                                <a class="header__user-button header__user-button--active header__register-button button" href="registration.php">Регистрация</a>
                             </li>
                         </ul>
                     <?php endif; ?>
@@ -227,13 +227,13 @@
                 <div class="footer__my-info">
                     <ul class="footer__my-pages">
                         <li class="footer__my-page footer__my-page--feed">
-                            <a class="footer__page-link" href="feed.html">Моя лента</a>
+                            <a class="footer__page-link" href="feed.php">Моя лента</a>
                         </li>
                         <li class="footer__my-page footer__my-page--popular">
-                            <a class="footer__page-link" href="popular.html">Популярный контент</a>
+                            <a class="footer__page-link" href="popular.php">Популярный контент</a>
                         </li>
                         <li class="footer__my-page footer__my-page--messages">
-                            <a class="footer__page-link" href="messages.html">Личные сообщения</a>
+                            <a class="footer__page-link" href="messages.php">Личные сообщения</a>
                         </li>
                     </ul>
                     <div class="footer__copyright">
