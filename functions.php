@@ -517,7 +517,7 @@ function get_link_title($url)
  * @return ошибку если будет
  */
 function plus_view($link, $post_id) {
-    $sql= "UPDATE posts SET views=views+1 WHERE id=$post_id";
+    $sql= "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
     $stml = db_get_prepare_stmt($link, $sql);
     $result = mysqli_stmt_execute($stml);
     if (!$result) {
