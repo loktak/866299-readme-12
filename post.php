@@ -3,7 +3,7 @@ require_once('init.php');
 require_once('validation.php');
 
 if (!isset($_SESSION['user'])) {
-    header("Location: /");
+    header("Location: /index.php");
 }
 
 $user_data = $_SESSION['user'];
@@ -24,6 +24,8 @@ $show_comments = $_GET['show_comments'] ?? NULL;
 $post_info = get_post_info($link, $_GET['post_id'])[0]; // ищем пост в БД
 
 $user_posts = count(get_user_posts_count($link, ($post_info['user_id'])));
+
+plus_view($link, $post_info['id']); //добавляем просмотр
 
 switch ($post_info['icon_type']) {
     case 'link':

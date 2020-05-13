@@ -3,7 +3,7 @@ require_once('init.php');
 require_once('validation.php');
 
 if (!isset($_SESSION['user'])) {
-    header("Location: /");
+    header("Location: /index.php");
 }
 
 $user_data = $_SESSION['user'];

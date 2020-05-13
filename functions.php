@@ -248,8 +248,6 @@ function get_posts_for_feed($link, $user_id)
     JOIN subscriptions sub ON sub.userto_id = p.user_id
     JOIN users u ON u.id = p.user_id
     JOIN content_type ct ON ct.id = p.type_id
-    LEFT JOIN likes l ON l.post_id = p.id
-    LEFT JOIN comments com ON com.post_id = p.id
     WHERE sub.user_id = $user_id
     ORDER BY p.post_date DESC";
 
@@ -273,8 +271,6 @@ function get_posts_for_feed_by_category($link, $user_id, $category)
     JOIN subscriptions sub ON sub.userto_id = p.user_id
     JOIN users u ON u.id = p.user_id
     JOIN content_type ct ON ct.id = p.type_id
-    LEFT JOIN likes l ON l.post_id = p.id
-    LEFT JOIN comments com ON com.post_id = p.id
     WHERE sub.user_id = $user_id AND ct.icon_type = '$category'
     ORDER BY p.post_date DESC";
 
@@ -496,7 +492,7 @@ function get_user_data_by_email($link, $email)
     $sql = "SELECT * FROM users u WHERE u.email = '$email'";
     $result = get_data($link, $sql);
 
-    return empty($result) ? NULL : $result;
+    return empty($result) ? NULL : $result[0];
 }
 
 /**
@@ -511,4 +507,20 @@ function get_link_title($url)
     if (preg_match('/<title>([^<]*)<\/title>/', $site, $matches) == 1) {
         return $matches[1];
     } 
+}
+
+/**
+ * Функция добавляет просмотр к посту
+ * @param mysqli $link
+ * $param $post_id айди поста в котором надо прибавить просмотр
+ * 
+ * @return ошибку если будет
+ */
+function plus_view($link, $post_id) {
+    $sql= "UPDATE posts SET views=views+1 WHERE id=$post_id";
+    $stml = db_get_prepare_stmt($link, $sql);
+    $result = mysqli_stmt_execute($stml);
+    if (!$result) {
+        return 'ошбика' . mysqli_error($link);
+    }
 }

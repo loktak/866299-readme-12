@@ -41,7 +41,7 @@
                 <img class="comments__picture" src="userpics/<?= $user_data['avatar'] ?>" alt="Аватар пользователя">
               </div>
               <div class="form__input-section <?= (!empty($errors['comment']) ? "form__input-section--error" : "") ?>">
-                <textarea class="comments__textarea form__textarea form__input" name="comment" id="comment" placeholder="Ваш комментарий"></textarea>
+                <textarea class="comments__textarea form__textarea form__input" name="comment" id="comment" placeholder="Ваш комментарий"><?= getPostValue('comment') ?></textarea>
                 <label class="visually-hidden">Ваш комментарий</label>
                 <button class="form__error-button button" type="button">!</button>
                 <div class="form__error-text">
@@ -70,7 +70,7 @@
                       <time class="comments__time"  title="<?= $comment_date->format('d.m.Y H:i') ?>" datetime="<?= $comment_date->format('Y-m-d H:i:s') ?>"><?= time_ago($comment_date) ?></time>
                     </div>
                     <p class="comments__text">
-                      <?= $comment['content'] ?>
+                      <?= anti_xss($comment['content']) ?>
                     </p>
                   </div>
                 </li>

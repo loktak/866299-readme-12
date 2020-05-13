@@ -3,7 +3,7 @@ require_once('init.php');
 require_once('validation.php');
 
 if (isset($_SESSION['user'])) {
-    header("Location: feed.php");
+    header("Location: /feed.php");
 }
 
 $errors = [];
@@ -30,18 +30,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = array_filter($errors);
 
     if (empty($errors)) {
-        $user_data = get_user_data_by_email($link, $form['email'])[0];
-    if (empty($user_data)) {
-        $errors['email'] = "Вы ввели неверный email/пароль";
-    }
-        
-    if (empty($errors) && password_verify($form['password'], $user_data['password'])) {
+        $user_data = get_user_data_by_email($link, $form['email']);
+        if (empty($user_data)) {
+            $errors['email'] = "Вы ввели неверный email/пароль";
+        }
+
+        if (empty($errors) && password_verify($form['password'], $user_data['password'])) {
             $_SESSION['user'] = $user_data;
             header("Location: feed.php");
         } else {
             $errors['password'] = 'Вы ввели неверный email/пароль';
         }
-    }    
+    }
 }
 
 

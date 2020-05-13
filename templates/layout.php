@@ -83,7 +83,7 @@
     <header class="header">
         <div class="header__wrapper container">
             <div class="header__logo-wrapper">
-                <a class="header__logo-link" href="main.html">
+                <a class="header__logo-link" href="index.php">
                     <img class="header__logo" src="img/logo.svg" alt="Логотип readme" width="128" height="24">
                 </a>
                 <p class="header__topic">
@@ -109,17 +109,17 @@
                     <?php if ($_SERVER['REQUEST_URI'] !== '/registration.php') : ?>
                         <ul class="header__my-nav">
                             <li class="header__my-page header__my-page--popular">
-                                <a class="header__page-link <?= ($title === 'Readme: Популярный контент') ? 'header__page-link--active' : "" ?>" title="Популярный контент" href="popular.php">
+                                <a class="header__page-link <?= ($active_page === 'popular') ? 'header__page-link--active' : "" ?>" title="Популярный контент" href="popular-cookie.php?type=all">
                                     <span class="visually-hidden">Популярный контент</span>
                                 </a>
                             </li>
                             <li class="header__my-page header__my-page--feed">
-                                <a class="header__page-link <?= ($title === 'Readme: Моя лента') ? 'header__page-link--active' : "" ?>" href="feed.php" title="Моя лента">
+                                <a class="header__page-link <?= ($active_page === 'feed') ? 'header__page-link--active' : "" ?>" href="feed.php" title="Моя лента">
                                     <span class="visually-hidden">Моя лента</span>
                                 </a>
                             </li>
                             <li class="header__my-page header__my-page--messages">
-                                <a class="header__page-link <?= ($title === 'Readme: Личные сообщения') ? 'header__page-link--active' : "" ?>" href="messages.php" title="Личные сообщения">
+                                <a class="header__page-link <?= ($active_page === 'messages') ? 'header__page-link--active' : "" ?>" href="messages.php" title="Личные сообщения">
                                     <span class="visually-hidden">Личные сообщения</span>
                                 </a>
                             </li>

@@ -4,9 +4,9 @@ require_once('init.php');
 require_once('validation.php');
 
 if (!isset($_SESSION['user'])) {
-  header("Location: /");
+  header("Location: /index.php");
 }
-
+$active_page = 'feed';
 $user_data = $_SESSION['user'];
 
 $page_parameters['type'] = $_GET['type'] ?? 'all';
@@ -19,27 +19,17 @@ if (!empty($_GET) && $page_parameters['type'] !== 'all') {
   $posts = get_posts_for_feed($link, $user_data['id']);
 }
 
-$site = file_get_contents('https://www.htmlacademy.ru');
-if (preg_match('/<title>([^<]*)<\/title>/',$site,$matches) == 1)
-{
-  $test = $matches[1];
-}
-else
-{
-  $test = "нет титла";
-}
-
 $page_content = include_template('feed-content.php', [
   'types' => posts_categories($link),
   'page_parameters' => $page_parameters,
-  'posts' => $posts,
-  'test' => $test
+  'posts' => $posts
 ]);
 
 $layout_content = include_template('layout.php', [
   'content' => $page_content,
   'title' => 'Readme: Моя лента',
-  'user_data' => $user_data
+  'user_data' => $user_data,
+  'active_page' => $active_page
 ]);
 
 print($layout_content);
