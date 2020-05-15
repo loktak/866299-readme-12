@@ -109,7 +109,7 @@
                     <?php if ($_SERVER['REQUEST_URI'] !== '/registration.php') : ?>
                         <ul class="header__my-nav">
                             <li class="header__my-page header__my-page--popular">
-                                <a class="header__page-link <?= ($active_page === 'popular') ? 'header__page-link--active' : "" ?>" title="Популярный контент" href="popular-cookie.php?type=all">
+                                <a class="header__page-link <?= ($active_page === 'popular') ? 'header__page-link--active' : "" ?>" title="Популярный контент" href="popular.php?type=all">
                                     <span class="visually-hidden">Популярный контент</span>
                                 </a>
                             </li>

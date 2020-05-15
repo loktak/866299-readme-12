@@ -9,6 +9,17 @@ $user_data = $_SESSION['user'];
 
 $active_page = 'popular';
 
+$expire = strtotime("+30 days");
+$path = "/popular.php";
+
+if (!empty($_GET)) {
+    foreach ($_GET as $key => $value) {
+        if (isset($_GET[$key])) {
+            setcookie($key, $value, $expire, $path);
+            $_COOKIE[$key] = $value;
+        }
+    }
+}
 
 $sorting_parameters = [];
 
