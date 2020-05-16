@@ -161,7 +161,7 @@ function embed_youtube_video($youtube_url)
 
     if ($id) {
         $src = "https://www.youtube.com/embed/" . $id;
-        $res = '<iframe width="760" height="400" src="' . $src . '" frameborder="0"></iframe>';
+        $res = '<iframe width="760" height="400" allowfullscreen src="' . $src . '" frameborder="0"></iframe>';
     }
 
     return $res;

@@ -9,6 +9,8 @@ Thumbs.db
 vendor
 uploads/*
 !uploads/.gitkeep
+!uploads/coast-medium.jpg
+!uploads/rock-medium.jpg
 userpics/*
 !/userpics/
 !userpics/userpic.jpg

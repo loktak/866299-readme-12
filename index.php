@@ -1,37 +1,52 @@
 <?php
 require_once('init.php');
+require_once('validation.php');
 
-$sorting_parameters = [];
+if (isset($_SESSION['user'])) {
+    header("Location: /feed.php");
+}
 
-$sorting_parameters['sort_value'] = $_GET['sort_value'] ?? 'views';
-$sorting_parameters['sorting'] = $_GET['sorting'] ?? 'DESC';
-$sorting_parameters['type'] = $_GET['type'] ?? 'all';
+$errors = [];
 
-$sort_value = $sorting_parameters['sort_value'];
-$sorting = $sorting_parameters['sorting'];
-
-$posts = popular_posts($link, $sort_value, $sorting);
-
-if (isset($_GET['type'])) {
-    if ($_GET['type'] === 'all') {
-        $posts = popular_posts($link, $sort_value, $sorting);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    foreach ($_POST as $key => $value) {
+        $form[$key] = trim($value);
     }
-    else {
-        $posts = popular_posts_category_sorting($link, $sorting_parameters['type'], $sort_value, $sorting);
+
+    $required_fields = ['email', 'password'];
+
+    $rules = [
+        'email' => function () {
+            return check_email($_POST['email']);
+        },
+        'password' => function () {
+            return validate_lenght($_POST['password'], 6);
+        }
+    ];
+
+    $errors = check_required_fields($required_fields); //проверка на пустое или нет
+    $errors = check_rules($rules, $errors, $form);
+
+    $errors = array_filter($errors);
+
+    if (empty($errors)) {
+        $user_data = get_user_data_by_email($link, $form['email']);
+        if (empty($user_data)) {
+            $errors['email'] = "Вы ввели неверный email/пароль";
+        }
+
+        if (empty($errors) && password_verify($form['password'], $user_data['password'])) {
+            $_SESSION['user'] = $user_data;
+            header("Location: feed.php");
+        } else {
+            $errors['password'] = 'Вы ввели неверный email/пароль';
+        }
     }
 }
 
-$page_content = include_template('main.php',[
-    'posts' => $posts,
-    'types' => posts_categories($link),
-    'sorting_parameters' => $sorting_parameters
-]);
 
-$layout_content = include_template('layout.php', [
-    'content' => $page_content,
-    'title' => 'Readme Главная',
-    'is_auth' => $is_auth,
-    'user_name' => $user_name
+$layout_content = include_template('index.php', [
+    'errors' => $errors
 ]);
 
 print($layout_content);

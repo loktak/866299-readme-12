@@ -2,6 +2,12 @@
 require_once('init.php');
 require_once('validation.php');
 
+if (!isset($_SESSION['user'])) {
+    header("Location: /index.php");
+}
+
+$user_data = $_SESSION['user'];
+
 $page_parameters['form-type'] = $_GET['type'] ?? 'photo';
 $page_parameters['heading'] = $_POST['heading'] ?? 'default';
 $files = $_FILES;
@@ -54,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $rules,
                 [
                     'post-text' => function () {
-                        return validate_lenght($_POST['post-text'], 50, 600);
+                        return validate_lenght($_POST['post-text'], 50, 1000);
                     }
                 ]
             );
@@ -87,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = check_rules($rules, $errors, $posts); // проверка на rules
 
-    
+
 
     if ($_POST['form-type'] === 'video' && empty($errors['video-url'])) {  // если иных ошибок не найдено проверяем что ссылка ведет на youtube
         $errors['video-url'] = check_youtube_link($_POST['video-url']);
@@ -100,11 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['photo-url'] = get_img_by_link($_POST['photo-url']);
         }
     }
-    
+
     $errors = array_filter($errors);
 
     if (empty($errors)) { // если массив c ошибками пустой
-        $user_id = 4;
+        $user_id = $user_data['id'];
         $db_post['title'] = $_POST['heading'];
         switch ($posts['form-type']) {
             case 'photo':
@@ -148,10 +154,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $post_id = add_post_to_db($link, $stml);
 
         $result = add_tags_to_posts($link, $tags, $post_id);
-    
+
         if ($result) {
             header("Location: post.php?post_id=" . $post_id);
-        } 
+        }
     }
 }
 
@@ -172,8 +178,7 @@ $page_content = include_template('add-post.php', [
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Добавить пост',
-    'is_auth' => $is_auth,
-    'user_name' => $user_name
+    'user_data' => $user_data
 ]);
 
 print($layout_content);

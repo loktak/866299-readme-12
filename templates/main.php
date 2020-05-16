@@ -7,7 +7,7 @@
             <b class="popular__sorting-caption sorting__caption">Сортировка:</b>
             <ul class="popular__sorting-list sorting__list">
                 <li class="sorting__item sorting__item--popular">
-                    <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'views') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" href="<?= set_url($sorting_parameters['type'], 'views', ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC"); ?>">
+                    <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'views') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" href="popular.php?sort_value=views&sorting=<?= ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC" ?>">
                         <span>Популярность</span>
                         <svg class="sorting__icon" width="10" height="12">
                             <use xlink:href="#icon-sort"></use>
@@ -16,7 +16,7 @@
                 </li>
                 <li class="sorting__item">
                     <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'likes') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" 
-                    href="<?= set_url($sorting_parameters['type'], 'likes', ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC"); ?>">
+                    href="popular.php?sort_value=likes&sorting=<?= ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC" ?>">
                         <span>Лайки</span>
                         <svg class="sorting__icon" width="10" height="12">
                             <use xlink:href="#icon-sort"></use>
@@ -25,7 +25,7 @@
                 </li>
                 <li class="sorting__item">
                     <a class="sorting__link <?= ($sorting_parameters['sort_value'] === 'post_date') ? 'sorting__link--active' : ""; ?> <?= ($sorting_parameters['sorting'] === 'ASC') ? 'sorting__link--reverse' : ""; ?>" 
-                    href="<?= set_url($sorting_parameters['type'], 'post_date', ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC"); ?>">
+                    href="popular.php?sort_value=post_date&sorting=<?= ($sorting_parameters['sorting'] === 'DESC') ? "ASC" : "DESC" ?>">
                         <span>Дата</span>
                         <svg class="sorting__icon" width="10" height="12">
                             <use xlink:href="#icon-sort"></use>
@@ -38,13 +38,13 @@
             <b class="popular__filters-caption filters__caption">Тип контента:</b>
             <ul class="popular__filters-list filters__list">
                 <li class="popular__filters-item popular__filters-item--all filters__item filters__item--all">
-                    <a class="filters__button filters__button--ellipse filters__button--all <?= ($sorting_parameters['type'] === 'all') ? 'filters__button--active' : ""; ?>" href="<?= set_url('all', $sorting_parameters['sort_value'], $sorting_parameters['sorting']) ?>">
+                    <a class="filters__button filters__button--ellipse filters__button--all <?= ($sorting_parameters['type'] === 'all') ? 'filters__button--active' : ""; ?>" href="<?= 'popular.php?type=all' ?>">
                         <span>Все</span>
                     </a>
                 </li>
                 <?php foreach ($types as $type) : ?>
                     <li class="popular__filters-item filters__item">
-                        <a href="<?= set_url($type['icon_type'], $sorting_parameters['sort_value'], $sorting_parameters['sorting']) ?>" class="filters__button filters__button--<?= ($type['icon_type']) ?> <?= ($sorting_parameters['type'] == $type['icon_type']) ? 'filters__button--active' : ""; ?> button">
+                        <a href="<?= 'popular.php?type=' . $type['icon_type'] ?>" class="filters__button filters__button--<?= ($type['icon_type']) ?> <?= ($sorting_parameters['type'] == $type['icon_type']) ? 'filters__button--active' : ""; ?> button">
                             <span class="visually-hidden"><?= ($type['type_name']) ?></span>
                             <svg class="filters__icon" width="22" height="18">
                                 <use xlink:href="#icon-filter-<?= ($type['icon_type']) ?>"></use>
@@ -71,20 +71,20 @@
                         </blockquote>
                     <?php elseif ($post['icon_type'] === 'photo') : ?>
                         <div class="post-photo__image-wrapper">
-                            <img src="<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
+                            <img src="uploads/<?= anti_xss($post['img']) ?>" alt="Фото от пользователя" width="360" height="240">
                         </div>
                     <?php elseif ($post['icon_type'] === 'link') : ?>
                         <div class="post-link__wrapper">
                             <a class="post-link__external" href="<?= anti_xss($post['link']) ?>" title="Перейти по ссылке">
                                 <div class="post-link__info-wrapper">
                                     <div class="post-link__icon-wrapper">
-                                        <img src="https://www.google.com/s2/favicons?domain=vitadental.ru" alt="Иконка">
+                                        <img src="https://www.google.com/s2/favicons?domain=<?= $post['link']?>" alt="Иконка">
                                     </div>
                                     <div class="post-link__info">
-                                        <h3><?= crop_text(anti_xss($post['title']), 20) ?></h3>
+                                        <h3><?= anti_xss($post['title']) ?></h3>
                                     </div>
                                 </div>
-                                <span><?= anti_xss($post['link']) ?></span>
+                                <span><?= mb_strimwidth(anti_xss($post['link']), 0, 34, "...") ?></span>
                             </a>
                         </div>
                     <?php elseif ($post['icon_type'] === 'video') : ?>
@@ -100,19 +100,18 @@
                             </a>
                         </div>
                     <?php else : ?>
-                        <?php crop_text(anti_xss($post['content_text'])) ?>
+                        <?= crop_text(anti_xss($post['content_text']), $post['id']) ?>
                     <?php endif; ?>
                 </div>
                 <footer class="post__footer">
                     <div class="post__author">
                         <a class="post__author-link" href="#" title="Автор">
                             <div class="post__avatar-wrapper">
-                                <!--укажите путь к файлу аватара-->
-                                <img class="post__author-avatar" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя">
+                                <img class="post__author-avatar" width="40px" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя">
                             </div>
                             <div class="post__info">
                                 <b class="post__author-name"><?= anti_xss($post['author_login']) ?></b>
-                                <?php $post_date = get_post_time($index); ?>
+                                <?php $post_date = new DateTime($post['post_date']); ?>
                                 <time class="post__time" title="<?= $post_date->format('d.m.Y H:i') ?>" datetime="<?= $post_date->format('Y-m-d H:i:s') ?>"><?= time_ago($post_date) ?></time>
                             </div>
                         </a>

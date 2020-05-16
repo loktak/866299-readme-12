@@ -36,64 +36,52 @@
             <span class="post__view"><?= $post_info['views'] ?></span>
           </div>
           <div class="comments">
-            <form class="comments__form form" action="#" method="post">
+            <form class="comments__form form" method="post">
               <div class="comments__my-avatar">
-                <img class="comments__picture" src="img/userpic-medium.jpg" alt="Аватар пользователя">
+                <img class="comments__picture" src="userpics/<?= $user_data['avatar'] ?>" alt="Аватар пользователя">
               </div>
-              <div class="form__input-section form__input-section--error">
-                <textarea class="comments__textarea form__textarea form__input" placeholder="Ваш комментарий"></textarea>
+              <div class="form__input-section <?= (!empty($errors['comment']) ? "form__input-section--error" : "") ?>">
+                <textarea class="comments__textarea form__textarea form__input" name="comment" id="comment" placeholder="Ваш комментарий"><?= getPostValue('comment') ?></textarea>
                 <label class="visually-hidden">Ваш комментарий</label>
                 <button class="form__error-button button" type="button">!</button>
                 <div class="form__error-text">
                   <h3 class="form__error-title">Ошибка валидации</h3>
-                  <p class="form__error-desc">Это поле обязательно к заполнению</p>
+                  <p class="form__error-desc"><?= (!empty($errors['comment']) ? $errors['comment'] : "") ?></p>
                 </div>
               </div>
+              <input type="hidden" value="<?= $post_info['id']?>" name="post_id" id="post_id">
               <button class="comments__submit button button--green" type="submit">Отправить</button>
             </form>
             <div class="comments__list-wrapper">
               <ul class="comments__list">
+                <?php foreach ($comments as $comment) : ?>
                 <li class="comments__item user">
                   <div class="comments__avatar">
-                    <a class="user__avatar-link" href="#">
-                      <img class="comments__picture" src="img/userpic-larisa.jpg" alt="Аватар пользователя">
+                    <a class="user__avatar-link" href="profile.php?user_id=<?= $comment['user_id'] ?>">
+                      <img class="comments__picture" src="userpics/<?= $comment['avatar'] ?>" alt="Аватар пользователя">
                     </a>
                   </div>
                   <div class="comments__info">
                     <div class="comments__name-wrapper">
-                      <a class="comments__user-name" href="#">
-                        <span>Лариса Роговая</span>
+                      <a class="comments__user-name" href="profile.php?user_id=<?= $comment['user_id'] ?>">
+                        <span><?= $comment['author'] ?></span>
                       </a>
-                      <time class="comments__time" datetime="2019-03-20">1 ч назад</time>
+                      <?php $comment_date = new DateTime($comment['comment_date']); ?>
+                      <time class="comments__time"  title="<?= $comment_date->format('d.m.Y H:i') ?>" datetime="<?= $comment_date->format('Y-m-d H:i:s') ?>"><?= time_ago($comment_date) ?></time>
                     </div>
                     <p class="comments__text">
-                      Красота!!!1!
+                      <?= anti_xss($comment['content']) ?>
                     </p>
                   </div>
                 </li>
-                <li class="comments__item user">
-                  <div class="comments__avatar">
-                    <a class="user__avatar-link" href="#">
-                      <img class="comments__picture" src="img/userpic-larisa.jpg" alt="Аватар пользователя">
-                    </a>
-                  </div>
-                  <div class="comments__info">
-                    <div class="comments__name-wrapper">
-                      <a class="comments__user-name" href="#">
-                        <span>Лариса Роговая</span>
-                      </a>
-                      <time class="comments__time" datetime="2019-03-18"></time>
-                    </div>
-                    <p class="comments__text">
-                    Что-то там про байкал
-                    </p>
-                  </div>
-                </li>
+                <?php endforeach ?>
               </ul>
-              <a class="comments__more-link" href="#">
+              <?php if ($hidded_comments_count !== NULL) :?>
+              <a class="comments__more-link" href="<?= $_SERVER['REQUEST_URI']. "&show_comments=all" ?>">
                 <span>Показать все комментарии</span>
-                <sup class="comments__amount">45</sup>
+                <sup class="comments__amount"><?= $hidded_comments_count ?></sup>
               </a>
+              <?php endif ?>
             </div>
           </div>
         </div>
