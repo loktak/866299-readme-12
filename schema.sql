@@ -23,7 +23,9 @@ CREATE TABLE posts (
   views INT UNSIGNED,
   
   user_id INT UNSIGNED,
-  type_id INT UNSIGNED
+  type_id INT UNSIGNED,
+  original_author_id INT UNSIGNED,
+  original_id INT UNSIGNED
 );
 
 CREATE TABLE comments (
@@ -77,3 +79,4 @@ icon_type VARCHAR(128)
 
 CREATE INDEX c_login ON users(login);
 CREATE INDEX c_title ON posts(title);
+CREATE FULLTEXT INDEX for_search ON posts(title, content_text, quote_author);

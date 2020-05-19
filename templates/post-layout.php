@@ -25,11 +25,11 @@
                 <span><?= $post_info['comments_count'] ?></span>
                 <span class="visually-hidden">количество комментариев</span>
               </a>
-              <a class="post__indicator post__indicator--repost button" href="#" title="Репост">
+              <a class="post__indicator post__indicator--repost button" href="repost.php?post_id=<?= $post_info['id'] ?>" title="Репост">
                 <svg class="post__indicator-icon" width="19" height="17">
                   <use xlink:href="#icon-repost"></use>
                 </svg>
-                <span>5</span>
+                <span><?= $post_info['reposts'] ?></span>
                 <span class="visually-hidden">количество репостов</span>
               </a>
             </div>
