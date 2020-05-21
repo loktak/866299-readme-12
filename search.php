@@ -2,6 +2,8 @@
 require_once('init.php');
 require_once('validation.php');
 
+$active_page = 'search';
+
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
 }
@@ -9,8 +11,9 @@ if (!isset($_SESSION['user'])) {
 $user_data = $_SESSION['user'];
 $page_back = $_SERVER['HTTP_REFERER'] ?? 'index.php';
 
+$search_request = trim($_GET['search_request']);
 
-if (empty($_GET['search_request'])) {
+if (empty($search_request)) {
   $page_content = include_template('no-result.php', [
     'search_request' => 'Ваш запрос пуст',
     'page_back' => $page_back
@@ -19,16 +22,16 @@ if (empty($_GET['search_request'])) {
     'content' => $page_content,
     'title' => 'Readme Публикация',
     'user_data' => $user_data,
+    'active_page' => $active_page
     
   ]);
   die($layout_content);
 }
 
-$search_request = trim($_GET['search_request']);
-if (substr($search_request, 0, 1) !== '#') {
+if (mb_substr($search_request, 0, 1) !== '#') {
   $posts = search_text_in_posts($link, $search_request);
 } else {
-  $hashtag = substr($search_request, 1);
+  $hashtag = mb_substr($search_request, 1);
   $posts = search_hastags_on_posts($link, $hashtag);
 }
 

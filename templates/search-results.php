@@ -4,7 +4,7 @@
         <div class="search__query-wrapper">
           <div class="search__query container">
             <span>Вы искали:</span>
-            <span class="search__query-text"><?= '"' .anti_xss($search_request). '"' ?></span>
+            <span class="search__query-text">"<?= anti_xss($search_request) ?>"</span>
           </div>
         </div>
         <div class="search__results-wrapper">

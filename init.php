@@ -9,3 +9,9 @@ require_once('helpers.php');
 require_once('db_requests.php');
 
 $link = database_conecting('localhost', 'root', 'root', 'readme');
+
+define("PHOTO", 1);
+define("VIDEO", 2);
+define("TEXT", 3);
+define("QUOTE", 4);
+define("LINK", 5);

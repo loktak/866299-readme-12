@@ -24,29 +24,29 @@ $post_info = get_post_by_id($link, $post_id);
 
 $title = $post_info['title'];
 $user_id = $user_data['id'];
-$type_id = $post_info['type_id'];
+$type_id = (int)$post_info['type_id'];
 $original_author_id = $post_info['user_id'];
 $original_id = $post_info['id'];
 
 switch ($type_id) {
-    case '1' :
+    case PHOTO :
         $column = 'img';
         $repost_info['img'] = $post_info['img'];
     break;
-    case '2' :
+    case VIDEO :
         $column = 'video';
         $repost_info['video'] = $post_info['video'];
     break;
-    case '3' :
+    case TEXT :
         $column = 'content_text';
         $repost_info['content_text'] = $post_info['content_text'];
     break;
-    case '4' :
+    case QUOTE :
         $column = 'content_text, quote_author';
         $repost_info['content_text'] = $post_info['content_text'];
         $repost_info['quote_author'] = $post_info['quote_author'];
     break;
-    case '5' :
+    case LINK :
         $column = 'link';
         $repost_info['link'] = $post_info['link'];
     break;
@@ -54,7 +54,7 @@ switch ($type_id) {
 
 $sql = "INSERT INTO posts (title, $column, user_id, type_id, original_author_id, original_id) 
 VALUES ('$title', ?, $user_id, $type_id, $original_author_id, $original_id)";
-if ($post_info['type_id'] === 4) {
+if ($type_id === QUOTE) {
     $sql = "INSERT INTO posts (title, $column, user_id, type_id, original_author_id, original_id) 
     VALUES ('$title', ?, ?, $user_id, $type_id, $original_author_id, $original_id)";
 }

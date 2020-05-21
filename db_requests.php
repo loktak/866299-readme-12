@@ -283,14 +283,14 @@ function get_user_data_by_email($link, $email)
  */
 function search_text_in_posts($link, $text) {
     $sql = "SELECT DISTINCT p.*, u.login AS author, u.avatar, ct.icon_type AS type,
-    MATCH(p.title, p.content_text, p.quote_author) AGAINST('$text') as score,
+    MATCH(p.title, p.content_text, p.quote_author) AGAINST('$text*') as score,
     IFNULL ((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
     IFNULL ((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments
     FROM posts p
     JOIN users u ON u.id = p.user_id
     JOIN content_type ct ON ct.id = p.type_id 
     WHERE MATCH(p.title, p.content_text, p.quote_author) 
-    AGAINST ('$text' IN BOOLEAN MODE) AND p.original_id is NULL
+    AGAINST ('$text*' IN BOOLEAN MODE) AND p.original_id is NULL
     ORDER BY score DESC";
 
     return get_data($link, $sql);
