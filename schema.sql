@@ -8,72 +8,75 @@ registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 email VARCHAR(128) NOT NULL UNIQUE,
 login VARCHAR(128) NOT NULL UNIQUE,
 password VARCHAR(128) NOT NULL,
-avatar VARCHAR(128)
+avatar VARCHAR(128) NOT NULL
 );
 
 CREATE TABLE posts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   post_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  title VARCHAR(128),
-  content_text VARCHAR(512),
-  quote_author VARCHAR(128),
-  img VARCHAR(128),
-  video VARCHAR(128),
-  link VARCHAR(256),
-  views INT UNSIGNED,
+  title VARCHAR(128) NOT NULL,
+  content_text VARCHAR(512) NULL,
+  quote_author VARCHAR(128) NULL,
+  img VARCHAR(128) NULL,
+  video VARCHAR(128) NULL,
+  link VARCHAR(256) NULL,
+  views INT UNSIGNED NULL,
   
-  user_id INT UNSIGNED,
-  type_id INT UNSIGNED
+  user_id INT UNSIGNED NOT NULL,
+  type_id INT UNSIGNED  NOT NULL,
+  original_author_id INT UNSIGNED NULL,
+  original_id INT UNSIGNED NULL
 );
 
 CREATE TABLE comments (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  content VARCHAR(512),
+  content VARCHAR(512) NOT NULL,
   
-  user_id INT UNSIGNED,
-  post_id INT UNSIGNED
+  user_id INT UNSIGNED NOT NULL,
+  post_id INT UNSIGNED NOT NULL
 );
 
 CREATE TABLE likes (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   
-  user_id INT UNSIGNED,
-  post_id INT UNSIGNED
+  user_id INT UNSIGNED  NOT NULL,
+  post_id INT UNSIGNED  NOT NULL
 );
 
-CREATE TABLE subscribtions (
+CREATE TABLE subscriptions (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   
-  user_id INT UNSIGNED,
-  userto_id INT UNSIGNED
+  user_id INT UNSIGNED NOT NULL,
+  userto_id INT UNSIGNED NOT NULL
 );
 
 CREATE TABLE messages (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  content VARCHAR(512),
+  content VARCHAR(512) NOT NULL,
   
-  user_id INT UNSIGNED,
-  userto_id INT UNSIGNED
+  user_id INT UNSIGNED NOT NULL,
+  userto_id INT UNSIGNED NOT NULL
 );
 
 CREATE TABLE hashtags (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-title VARCHAR(128)
+title VARCHAR(128) NOT NULL
 );
 
 CREATE TABLE hashtags_posts (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-tag_id INT UNSIGNED,
-post_id INT UNSIGNED
+tag_id INT UNSIGNED NOT NULL,
+post_id INT UNSIGNED NOT NULL
 );
 
 CREATE TABLE content_type (
 id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 type_name VARCHAR(128) NOT NULL,
-icon_type VARCHAR(128)
+icon_type VARCHAR(128) NOT NULL
 );
 
 CREATE INDEX c_login ON users(login);
 CREATE INDEX c_title ON posts(title);
+CREATE FULLTEXT INDEX for_search ON posts(title, content_text, quote_author);

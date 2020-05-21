@@ -15,9 +15,8 @@ $posts = get_posts_for_feed($link, $user_data['id']);
 
 if (!empty($_GET) && $page_parameters['type'] !== 'all') {
   $posts = get_posts_for_feed_by_category($link, $user_data['id'], $page_parameters['type']);
-} else {
-  $posts = get_posts_for_feed($link, $user_data['id']);
 }
+
 
 $page_content = include_template('feed-content.php', [
   'types' => posts_categories($link),
