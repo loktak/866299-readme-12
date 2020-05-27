@@ -94,5 +94,5 @@ VALUES
 /*
 Подписка на пользователя
 */
-INSERT INTO subscribtions (user_id, userto_id)
+INSERT INTO subscriptions (user_id, userto_id)
 VALUES (1, 4);

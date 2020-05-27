@@ -58,7 +58,7 @@ CREATE TABLE interlocutors
 	sender_id INT(10) NOT NULL,
 	receiver_id INT(10) NOT NULL,
 	last_message_date DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
-)
+);
 
 CREATE TABLE messages (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

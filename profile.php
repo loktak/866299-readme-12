@@ -1,6 +1,6 @@
 <?php
-require_once('init.php');
-require_once('validation.php');
+require_once 'init.php';
+require_once 'validation.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -40,7 +40,7 @@ $profile_id = $_COOKIE['user_id'] ?? $user_data['id'];
 $profile_info = get_profile_data($link, $profile_id, $user_data['id']);
 
 $comments_for_id = $_COOKIE['comments_for'] ?? 0;
-$show_comments = $_GET['show_comments'] ?? NULL;
+$show_comments = $_GET['show_comments'] ?? null;
 
 if ($active_tab === 'posts') {
 
@@ -52,7 +52,7 @@ if ($active_tab === 'posts') {
     if ($comments_count > 2 && $show_comments !== 'all') {
         $cutted_comments = [
             '0' => $comments[$comments_for_id][0],
-            '1' => $comments[$comments_for_id][1]
+            '1' => $comments[$comments_for_id][1],
         ];
         $comments[$comments_for_id] = $cutted_comments;
         $hidded_comments_count = $comments_count - 2;
@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rules = [
         'comment' => function () use ($comment) {
             return validate_lenght($comment['comment'], 4, 100);
-        }
+        },
     ];
     $errors = check_required_fields($required_fields);
     $errors = check_rules($rules, $errors, $comment);
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $comment_data = [
             'content' => $comment['comment'],
             'user_id' => $user_data['id'],
-            'post_id' => $comment['post_id']
+            'post_id' => $comment['post_id'],
         ];
         $stml = db_get_prepare_stmt($link, $sql, $comment_data);
         $result = mysqli_stmt_execute($stml);
@@ -103,7 +103,7 @@ if ($active_tab === 'posts' || $_SERVER['REQUEST_METHOD'] === 'POST') {
         'hidded_comments_count' => $hidded_comments_count,
         'comments_for_id' => $comments_for_id,
         'errors' => $errors,
-        'user_data' => $user_data
+        'user_data' => $user_data,
     ]);
     if (empty($posts)) {
         $profile_tab = include_template('no-content.php', []);
@@ -113,7 +113,7 @@ if ($active_tab === 'posts' || $_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($active_tab === 'likes') {
     $likes = get_user_likes($link, $profile_id);
     $profile_tab = include_template('profile/profile-likes.php', [
-        'likes' => $likes
+        'likes' => $likes,
     ]);
     if (empty($likes)) {
         $profile_tab = include_template('no-content.php', []);
@@ -124,7 +124,7 @@ if ($active_tab === 'subscriptions') {
     $subsribers = get_subscribers($link, $profile_id, $user_data['id']);
     $profile_tab = include_template('profile/profile-subscriptions.php', [
         'subsribers' => $subsribers,
-        'user_data' => $user_data
+        'user_data' => $user_data,
     ]);
     if (empty($subsribers)) {
         $profile_tab = include_template('no-content.php', []);
@@ -135,7 +135,7 @@ $page_content = include_template('profile-template.php', [
     'profile_tab' => $profile_tab,
     'profile_info' => $profile_info,
     'user_data' => $user_data,
-    'active_tab' => $active_tab
+    'active_tab' => $active_tab,
 ]);
 
 $layout_content = include_template('layout.php', [
@@ -143,7 +143,7 @@ $layout_content = include_template('layout.php', [
     'title' => 'Readme: Профиль пользователя',
     'user_data' => $user_data,
     'active_page' => $active_page,
-    'unreaded_messages_count' => $unreaded_messages_count
+    'unreaded_messages_count' => $unreaded_messages_count,
 ]);
 
 print($layout_content);
