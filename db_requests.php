@@ -25,7 +25,7 @@ function get_data($link, $sql)
  * @param string $sorting сортировка по возрастанию или убыванию
  * @return array двумерный массив данных
  */
-function popular_posts($link, $sort_value = 'views', $sorting = ' DESC')
+function popular_posts($link, $sort_value = 'views', $sorting = ' DESC', $page_items, $offset)
 {
     $sql = "
     SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_value
@@ -35,6 +35,7 @@ function popular_posts($link, $sort_value = 'views', $sorting = ' DESC')
     LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
     LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com ON com.post_id = p.id
     ORDER BY $sort_value $sorting
+    LIMIT $page_items OFFSET $offset
     ";
     return get_data($link, $sql);
 }
@@ -49,7 +50,7 @@ function popular_posts($link, $sort_value = 'views', $sorting = ' DESC')
  * 
  * @return array двумерный массив данных
  */
-function popular_posts_category_sorting($link, $type, $sort_value = 'views', $sorting = ' DESC')
+function popular_posts_category_sorting($link, $type, $sort_value = 'views', $sorting = ' DESC', $page_items, $offset)
 {
     $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_value
     FROM posts p
@@ -58,7 +59,9 @@ function popular_posts_category_sorting($link, $type, $sort_value = 'views', $so
     LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
     LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com ON com.post_id = p.id
     WHERE ct.icon_type = '$type'
-    ORDER BY $sort_value $sorting";
+    ORDER BY $sort_value $sorting
+    LIMIT $page_items OFFSET $offset";
+
     return get_data($link, $sql);
 }
 
@@ -124,20 +127,25 @@ function posts_categories($link)
 /**
  * Функция вызывает информацию по по посту используя его id.
  * @param mysqli $link
- * @param string $post_id id поста
+ * @param int $post_id id поста
+ * @param int $profile id авторизованного пользователя
  * 
  * @return array двумерный массив данных
  */
-function get_post_info($link, $post_id)
+function get_post_info($link, $post_id, $profile_id)
 {
-    $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, 
+    $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, u.registration_date,
     IFNULL((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
     IFNULL((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments_count,
     IFNULL((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id), 0) AS subscribers,
-    IFNULL((SELECT COUNT(*) FROM posts post WHERE post.original_id = p.id), 0) AS reposts
+    IFNULL((SELECT COUNT(*) FROM posts post WHERE post.original_id = p.id), 0) AS reposts,
+    post.post_date AS original_date, us.login AS original_author_name, us.avatar AS original_author_avatar,
+    IFNULL ((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id AND sub.user_id = $profile_id ), 0) AS is_subscribed
     FROM posts p
-   JOIN users u ON p.user_id = u.id
-   JOIN content_type ct ON p.type_id = ct.id
+    JOIN users u ON p.user_id = u.id
+    JOIN content_type ct ON p.type_id = ct.id
+    LEFT JOIN users us ON us.id = p.original_author_id
+    LEFT JOIN posts post ON post.id = p.original_id
    WHERE p.id = $post_id";
     $result = get_data($link, $sql);
 
@@ -158,7 +166,7 @@ function get_post_comments($link, $post_id)
     JOIN posts p ON p.id = com.post_id
     JOIN users u ON u.id = com.user_id
     WHERE com.post_id = $post_id
-    ORDER BY comment_date ASC";
+    ORDER BY comment_date DESC";
 
     return get_data($link, $sql);
 }
@@ -281,7 +289,8 @@ function get_user_data_by_email($link, $email)
  * 
  * @return array массив с данными о пользователе
  */
-function search_text_in_posts($link, $text) {
+function search_text_in_posts($link, $text)
+{
     $sql = "SELECT DISTINCT p.*, u.login AS author, u.avatar, ct.icon_type AS type,
     MATCH(p.title, p.content_text, p.quote_author) AGAINST('$text*') as score,
     IFNULL ((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
@@ -303,7 +312,8 @@ function search_text_in_posts($link, $text) {
  * 
  * @return array массив с данными о пользователе
  */
-function search_hastags_on_posts($link, $hashtag) {
+function search_hastags_on_posts($link, $hashtag)
+{
     $sql = "SELECT DISTINCT p.*, u.login AS author, u.avatar, ct.icon_type AS type,
     IFNULL ((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
     IFNULL ((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments
@@ -312,8 +322,179 @@ function search_hastags_on_posts($link, $hashtag) {
     JOIN content_type ct ON ct.id = p.type_id 
     JOIN hashtags_posts hp ON hp.post_id = p.id
     JOIN hashtags h ON h.id = hp.tag_id
-    WHERE h.title LIKE '%$hashtag%' 
+    WHERE h.title LIKE '%$hashtag%' AND p.original_id is NULL
     ORDER BY p.post_date DESC";
+
+    return get_data($link, $sql);
+}
+
+/**
+ * Функция получает список постов одного автора и сортирует их по дате добавления
+ * @param mysqli $link
+ * @param int $author_id id автора
+ * 
+ * @return array массив с данными о пользователе
+ */
+function get_posts_by_author_id($link, $author_id)
+{
+    $sql = "SELECT DISTINCT p.*, u.login AS author_login, ct.icon_type AS type, u.avatar,
+    IFNULL((SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id), 0) AS likes,
+    IFNULL((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments_count,
+    IFNULL((SELECT COUNT(*) FROM posts post WHERE post.original_id = p.id), 0) AS reposts,
+    post.post_date AS original_date, us.login AS original_author_name, us.avatar AS original_author_avatar
+    FROM posts p
+    JOIN users u ON u.id = p.user_id
+    JOIN content_type ct ON ct.id = p.type_id
+    LEFT JOIN users us ON us.id = p.original_author_id
+    LEFT JOIN posts post ON post.id = p.original_id
+    WHERE p.user_id = $author_id
+    ORDER BY p.post_date DESC";
+
+    return get_data($link, $sql);
+}
+
+/**
+ * Функция получает информацию о пользователе и проверяет подписан ли залогиненный пользователь на него
+ * @param mysqli $link
+ * @param int $profile_id id пользователя
+ * @param int $user_id id залогиненого пользователя
+ * 
+ * @return array массив с данными о пользователе
+ */
+function get_profile_data($link, $profile_id, $user_id)
+{
+    $sql = "SELECT DISTINCT u.id, u.login, u.avatar, IFNULL(COUNT(p.user_id), 0) AS user_posts, 
+    u.registration_date,
+    IFNULL((SELEct COUNT(*) FROM subscriptions sub WHERE sub.userto_id = u.id), 0) AS user_subs,
+    IFNULL((SELEct COUNT(*) FROM subscriptions subs WHERE subs.userto_id = u.id AND subs.user_id = $user_id), 0) AS is_subscribed
+    FROM users u
+    JOIN posts p ON p.user_id = u.id
+    WHERE u.id = $profile_id";
+
+    return get_data($link, $sql)[0];
+}
+
+
+/**
+ * Функция получает список хэштегов для поста по id
+ * @param mysqli $link
+ * @param int $post_id id поста
+ *
+ * @return array массив с данными о пользователе
+ */
+function get_hashtags_for_post($link, $post_id)
+{
+    $sql = "SELECT h.title
+    FROM hashtags h
+    JOIN hashtags_posts hp ON hp.tag_id = h.id
+    WHERE hp.post_id = $post_id";
+
+    return get_data($link, $sql);
+}
+
+/**
+ * Функция получает список тех кто поставил лайки определенному пользователю
+ * @param mysqli $link
+ * @param int $usert_id id пользователя
+ *
+ * @return array массив с данными о пользователе
+ */
+function get_user_likes($link, $user_id)
+{
+    $sql = "SELECT p.id, p.img, p.video, l.like_date, u.login, u.avatar, l.user_id, ct.icon_type AS 'type'
+    FROM posts p
+    JOIN likes l ON l.post_id = p.id
+    JOIN users u ON u.id = l.user_id
+    JOIN content_type ct ON ct.id = p.type_id
+    WHERE p.user_id = $user_id
+    ORDER BY l.like_date DESC";
+
+    return get_data($link, $sql);
+}
+
+/**
+ * Функция получает список тех кто подписан на пользователя и проверяет подписан ли на них активный пользователь
+ * @param mysqli $link
+ * @param int $profile_id пользователя
+ * @param int $usert_id id авторизованного пользователя
+ *
+ * @return array массив с данными о пользователе
+ */
+function get_subscribers($link, $profile_id, $user_id)
+{
+    $sql = "SELECT DISTINCT u.id, u.login, u.avatar, u.registration_date AS 'date',
+    IFNULL(COUNT(subs.user_id), 0) AS subscribers,
+    IFNULL((SELECT COUNT(*) FROM posts p WHERE p.user_id = u.id), 0) AS posts,
+    IFNULL((SELECT COUNT(*) FROM subscriptions s WHERE s.userto_id = u.id AND s.user_id = $user_id),0) AS is_subscribed
+    FROM users u
+    JOIN subscriptions sub ON sub.user_id = u.id
+    LEFT JOIN subscriptions subs ON subs.userto_id = u.id
+    WHERE sub.userto_id = $profile_id
+    GROUP BY u.id
+    ORDER BY u.id DESC";
+
+    return get_data($link, $sql);
+}
+
+
+/**
+ * Функция получает список сообщений между двумя пользователями
+ * @param mysqli $link
+ * @param int $user_one id первого пользователя
+ * @param int $user_two id второго пользователя
+ *
+ * @return array массив с данными о пользователе
+ */
+function get_chat_messages($link, $user_one, $user_two)
+{
+    $sql = "SELECT m.message_date AS 'date', m.content, u.avatar AS sender_avatar, u.login AS sender_name, m.user_id AS sender_id
+    FROM messages m
+    JOIN users u ON u.id = m.user_id
+    WHERE m.userto_id = $user_one AND m.user_id = $user_two OR m.userto_id = $user_two AND m.user_id = $user_one
+    ORDER BY message_date ASC";
+    return get_data($link, $sql);
+}
+
+
+/**
+ * Вызывает список юзеров с кем у пользователя есть чат
+ * @param mysqli $link
+ * @param int $user_one id первого пользователя
+ * @param int $user_two id второго пользователя
+ * 
+ * @return array массив c cообщениями
+ */
+function check_interclutor($link, $profile_id, $user_id)
+{
+    $sql = "SELECT i.*
+    FROM interlocutors i
+    WHERE i.sender_id = $profile_id AND i.receiver_id = $user_id OR i.sender_id = $user_id AND i.receiver_id = $profile_id";
+
+    if (!empty(get_data($link, $sql))) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**
+ * Вызывает список юзеров с кем у пользователя есть чат
+ * @param mysqli $link
+ * @param int $profile_id id первого пользователя
+ * @param int $recived_id id второго пользователя
+ * 
+ * @return array массив c собеседниками
+ */
+function get_interclutors($link, $profile_id)
+{
+    $sql = "SELECT i.*, u.login AS sender_name, us.login AS receiver_name, u.avatar AS sender_avatar, us.avatar AS receiver_avatar,
+    (SELECT m.content FROM messages m 
+    WHERE (m.user_id = i.sender_id AND m.userto_id = i.receiver_id OR m.user_id = i.receiver_id AND m.userto_id = i.sender_id)
+    AND m.message_date = i.last_message_date ) AS last_message
+    FROM interlocutors i
+    JOIN users u ON u.id = i.sender_id
+    LEFT JOIN users us ON us.id = i.receiver_id
+    WHERE i.sender_id = $profile_id OR i.receiver_id = $profile_id";
 
     return get_data($link, $sql);
 }

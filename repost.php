@@ -19,14 +19,25 @@ $post_id = $_GET['post_id'];
 $post_info = get_post_by_id($link, $post_id);
   if (empty($post_info)) {
     header("Location: $page_back");
+    die();
 }
 
+if ($post_info['user_id'] === $user_data['id']) { //если пост и так пренадлежит пользователю, то просто показываем ему его пост. так как в тз написано, что репосты чужих постов.
+    $path = '/post.php?post_id=' .$post_info['id'];
+    header("Location: $path");
+    die();
+}
 
+$hashtags = get_hashtags_for_post($link, $post_id);
 $title = $post_info['title'];
 $user_id = $user_data['id'];
 $type_id = (int)$post_info['type_id'];
 $original_author_id = $post_info['user_id'];
 $original_id = $post_info['id'];
+
+if (!empty($post_info['original_id'])) {  // делает так что повторный репост не возможен
+    $original_id = $post_info['original_id'];
+}
 
 switch ($type_id) {
     case PHOTO :
@@ -64,6 +75,11 @@ $result = mysqli_stmt_execute($stml);
 if (!$result) {
  return print('не получилось сделать репост'. mysqli_error($link));
 } else {
-    header("Location: $page_back");
+    $post_id = mysqli_insert_id($link);
+    foreach ($hashtags as $hashtag) {
+        $result = add_tags_to_posts($link, $hashtag, $post_id);
+    }
+    $user_id = $user_data['id'];
+    header("Location: /profile.php?user_id=$user_id&active_tab=posts");
 }
 

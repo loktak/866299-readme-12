@@ -8,7 +8,22 @@ if (!isset($_SESSION['user'])) {
 
 $user_data = $_SESSION['user'];
 
-if (empty($_GET['post_id']) || empty(get_post_info($link, $_GET['post_id'])[0])) { // если нет гет запроса или нет такого поста показываем страницу 404
+$expire = strtotime("+30 days");
+
+$path = "/post.php";
+$active_page = 'post';
+
+$errors = [];
+$show_comments = $_GET['show_comments'] ?? NULL;
+
+if (isset($_GET['post_id'])) {
+    setcookie('post_id', $_GET['post_id'], $expire, $path);
+    $_COOKIE['post_id'] = $_GET['post_id'];
+}
+
+$post_id = $_COOKIE['post_id'] ?? null;
+
+if ($post_id === null || empty(get_post_info($link, $post_id, $profile_id)[0])) { // если нет гет запроса или нет такого поста показываем страницу 404
     $page_content = include_template('post/post404.php', []);
     $layout_content = include_template('layout.php', [
         'content' => $page_content,
@@ -18,10 +33,7 @@ if (empty($_GET['post_id']) || empty(get_post_info($link, $_GET['post_id'])[0]))
     die(print($layout_content));
 }
 
-$errors = [];
-$show_comments = $_GET['show_comments'] ?? NULL;
-
-$post_info = get_post_info($link, $_GET['post_id'])[0]; // ищем пост в БД
+$post_info = get_post_info($link, $post_id, $profile_id)[0]; // ищем пост в БД
 
 $user_posts = count(get_user_posts_count($link, ($post_info['user_id'])));
 
@@ -91,12 +103,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stml = db_get_prepare_stmt($link, $sql, $comment_data);
         $result = mysqli_stmt_execute($stml);
         if ($result) {
-            $id = $comment['post_id'];
-            header("Location: post.php?post_id=$id"); //пока нет страницы с профилем пользователя возвращаю на эту же
+            $id = $comment['author_id'];
+            header("Location: profile.php?user_id=$id");
         }
         $errors['comment'] = 'не удалось добавить комментарий' . mysqli_error($link);
     }
 }
+
 $page_content = include_template('post-layout.php', [
     'post_content' => $post_content,
     'post_info' => $post_info,
@@ -111,7 +124,10 @@ $page_content = include_template('post-layout.php', [
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme Публикация',
-    'user_data' => $user_data
+    'user_data' => $user_data,
+    'unreaded_messages_count' => $unreaded_messages_count,
+    'active_page' => $active_page,
 ]);
 
 print($layout_content);
+print_r($post_info);

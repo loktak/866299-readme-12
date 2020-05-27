@@ -144,17 +144,17 @@
                                     <div class="header__profile-tooltip">
                                         <ul class="header__profile-nav">
                                             <li class="header__profile-nav-item">
-                                                <a class="header__profile-nav-link" href="#">
+                                                <a class="header__profile-nav-link" href="profile.php?user_id=<?= $user_data['id']?>&active_tab=posts">
                                                     <span class="header__profile-nav-text">
                                                         Мой профиль
                                                     </span>
                                                 </a>
                                             </li>
                                             <li class="header__profile-nav-item">
-                                                <a class="header__profile-nav-link" href="#">
+                                                <a class="header__profile-nav-link" href="messages.php">
                                                     <span class="header__profile-nav-text">
                                                         Сообщения
-                                                        <i class="header__profile-indicator">2</i>
+                                                        <?= ((int)$unreaded_messages_count > 0) ? '<i class="header__profile-indicator">' . $unreaded_messages_count . '</i>' : "" ?>
                                                     </span>
                                                 </a>
                                             </li>

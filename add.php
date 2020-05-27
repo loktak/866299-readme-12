@@ -8,6 +8,8 @@ if (!isset($_SESSION['user'])) {
 
 $user_data = $_SESSION['user'];
 
+$active_page = 'add';
+
 $page_parameters['form-type'] = $_GET['type'] ?? 'photo';
 $page_parameters['heading'] = $_POST['heading'] ?? 'default';
 $files = $_FILES;
@@ -178,7 +180,9 @@ $page_content = include_template('add-post.php', [
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Добавить пост',
-    'user_data' => $user_data
+    'user_data' => $user_data,
+    'active_page' => $active_page,
+    'unreaded_messages_count' => $unreaded_messages_count
 ]);
 
 print($layout_content);

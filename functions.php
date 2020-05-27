@@ -92,7 +92,7 @@ function anti_xss($user_content)
  * @author Arseny Spirin <spirinars@ya.ru>
  */
 
-function time_ago($post_upload_time)
+function time_ago($post_upload_time, $ago_text =" назад")
 {
     $current_time = new DateTime('now');
     $interval = $post_upload_time->diff($current_time);
@@ -106,20 +106,20 @@ function time_ago($post_upload_time)
 
     if ($years != 0) {
         $years = floor($years);
-        $ago = $years . ' ' . plural_form($years, array('год', 'года', 'лет')) . ' назад';
+        $ago = $years . ' ' . plural_form($years, array('год', 'года', 'лет')) . $ago_text;
     } elseif ($months != 0) {
         $months = floor($months);
-        $ago = $months . ' ' . plural_form($months, array('месец', 'месеца', 'месецев')) . ' назад';
+        $ago = $months . ' ' . plural_form($months, array('месец', 'месеца', 'месецев')) . $ago_text;
     } elseif ($days > 7 && $days < 35) {
         $week = floor($days / 7);
-        $ago = $week . ' ' . plural_form($week, array('неделю', 'недели', 'недель')) . ' назад';
+        $ago = $week . ' ' . plural_form($week, array('неделю', 'недели', 'недель')) . $ago_text;
     } elseif ($days != 0) {
-        $ago = $days . ' ' . plural_form($days, array('день', 'дня', 'дней')) . ' назад';
+        $ago = $days . ' ' . plural_form($days, array('день', 'дня', 'дней')) . $ago_text;
     } elseif ($hours != 0) {
         $hours = floor($hours);
-        $ago = $hours . ' ' . plural_form($hours, array('час', 'часа', 'часов')) . ' назад';
+        $ago = $hours . ' ' . plural_form($hours, array('час', 'часа', 'часов')) . $ago_text;
     } elseif ($minutes != 0) {
-        $ago = $minutes . ' ' . plural_form($minutes, array('минуту', 'минуты', 'минут')) . ' назад';
+        $ago = $minutes . ' ' . plural_form($minutes, array('минуту', 'минуты', 'минут')) . $ago_text;
     } else {
         $ago = 'меньше минуты назад';
     }
@@ -243,7 +243,7 @@ function get_link_title($url)
     $site = file_get_contents($url);
     if (preg_match('/<title>([^<]*)<\/title>/', $site, $matches) == 1) {
         return $matches[1];
-    } 
+    }
 }
 
 /**
@@ -253,11 +253,35 @@ function get_link_title($url)
  * 
  * @return ошибку если будет
  */
-function plus_view($link, $post_id) {
-    $sql= "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
+function plus_view($link, $post_id)
+{
+    $sql = "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
     $stml = db_get_prepare_stmt($link, $sql);
     $result = mysqli_stmt_execute($stml);
     if (!$result) {
         return 'ошбика' . mysqli_error($link);
     }
+}
+
+/**
+ * Функция проверяет заданное имя и если оно состоит из нескольких слов добавляет <br>
+ * @param string $name
+ * 
+ * @return string $name_with_br
+ */
+function get_profile_name_with_br($name)
+{
+    $name_array = explode(" ", $name);
+    if (count($name_array) > 1) {
+        $i = 0;
+        foreach ($name_array as $word) {
+            if ($i < (sizeof($name_array)-1) ) {
+                $word .= '<br>'; 
+            }
+            $new_name_array[] = $word;
+            $i++;
+        }
+        return implode($new_name_array);
+    }
+    return $name;
 }
