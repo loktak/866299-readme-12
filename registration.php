@@ -1,7 +1,7 @@
 <?php
 
-require_once('init.php');
-require_once('validation.php');
+require_once 'init.php';
+require_once 'validation.php';
 
 $errors = []; //объявляем массив с ошибками
 
@@ -12,11 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $required_fields = ['email', 'login', 'password', 'password-repeat']; //определяем поля для проверки на заполненость
     //определяем список проверок для полей
-    $rules =[
-        'email' => function() use (&$link, $registration_data) {
+    $rules = [
+        'email' => function () use (&$link, $registration_data) {
             return email_validation($link, $registration_data['email']);
         },
-        'login' => function() use (&$link, $registration_data) {
+        'login' => function () use (&$link, $registration_data) {
             return login_validation($link, $registration_data['login']);
         },
         'password' => function () {
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         },
         'password-repeat' => function () {
             return compare_values($_POST['password-repeat'], $_POST['password']);
-        }
+        },
     ];
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $errors = array_filter($errors); //получаем окончательный массив с ошибками
-    
+
     // если ошибок нет создаем sql запрос на добавление нового юзера. и переходим на главную страницу
     if (empty($errors)) {
         $file_name = $file['picture']['name'] ?? 'default.jpg';
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'email' => $registration_data['email'],
             'login' => $registration_data['login'],
             'password' => password_hash($registration_data['password'], PASSWORD_DEFAULT),
-            'avatar' => $file_name
+            'avatar' => $file_name,
         ];
 
         $stml = db_get_prepare_stmt($link, $sql, $user);
@@ -55,21 +55,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($result) {
             header("Location: index.php");
         }
-        
+
         $errors['input-file'] = 'не удалось зарегистрировать нового пользователя' . mysqli_error($link);
     }
 }
 
-
-
 $page_content = include_template('registration.php', [
-    'errors' => $errors
+    'errors' => $errors,
 ]);
 
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Регистрация',
-    'is_auth' => 0
+    'is_auth' => 0,
 ]);
 
 print($layout_content);

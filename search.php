@@ -1,6 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
+require_once('interlocutors.php');
 
 $active_page = 'search';
 

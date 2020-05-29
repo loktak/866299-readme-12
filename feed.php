@@ -1,7 +1,7 @@
 <?php
-
 require_once('init.php');
 require_once('validation.php');
+require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
   header("Location: /index.php");
@@ -14,9 +14,8 @@ $page_parameters['type'] = $_GET['type'] ?? 'all';
 $hashtags = [];
 $posts = get_posts_for_feed($link, $user_data['id']);
 
-
 if (!empty($_GET) && $page_parameters['type'] !== 'all') {
-  $posts = get_posts_for_feed_by_category($link, $user_data['id'], $page_parameters['type']);
+  $posts = get_posts_for_feed_by_category($link, $user_data['id'], mysqli_real_escape_string($link, $page_parameters['type']));
 }
 
 foreach ($posts as $post) {

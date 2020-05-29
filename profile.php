@@ -1,6 +1,7 @@
 <?php
-require_once 'init.php';
-require_once 'validation.php';
+require_once('init.php');
+require_once('validation.php');
+require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -12,13 +13,11 @@ $active_page = 'profile.php';
 $errors = [];
 $hashtags = [];
 
-$expire = strtotime("+30 days");
-$path = "/profile.php";
 
 if (isset($_GET['user_id'])) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
-    $id = $_GET['user_id'] ?? 0;
-    $sql = "SELECT u.* FROM users u WHERE id=$id";
-    if (empty(get_data($link, $sql))) {
+    $id = (int) $_GET['user_id'];
+    $is_user = is_exists_user($link, $id);
+    if (!$is_user) {
         header("Location: /profile.php");
         die();
     }
@@ -26,16 +25,16 @@ if (isset($_GET['user_id'])) { // проверяем есть ли такой ю
 
 if (!empty($_GET)) {
     foreach ($_GET as $key => $value) {
-        if (isset($_GET[$key])) {
-            setcookie($key, $value, $expire, $path);
+        if (isset($_GET[$key]) && ($key === 'user_id' || $key === 'active_tab')) {
+            setcookie($key, $value, strtotime("+30 days"), '/profile.php');
             $_COOKIE[$key] = $value;
         }
     }
 }
 
-$active_tab = $_COOKIE['active_tab'] ?? 'posts';
+$active_tab = mysqli_real_escape_string($link, $_COOKIE['active_tab']) ?? 'posts';
 
-$profile_id = $_COOKIE['user_id'] ?? $user_data['id'];
+$profile_id = (int)$_COOKIE['user_id'] ?? $user_data['id'];
 
 $profile_info = get_profile_data($link, $profile_id, $user_data['id']);
 

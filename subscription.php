@@ -17,34 +17,26 @@ if (empty($_GET['user_id']) || $user_data['id'] === $_GET['user_id']) {
 
 $subscriber_id = $user_data['id'];
 
-$user_id = $_GET['user_id'];
+$user_id = (int) $_GET['user_id'];
 
-$sql = "SELECT sub.* FROM subscriptions sub WHERE sub.user_id = $subscriber_id AND sub.userto_id = $user_id";
+$is_user = is_exists_user($link, $user_id); //проверка на существование такого юзера
 
-$check_subscription = get_data($link, $sql)[0] ?? NULL;
-
-if (empty($check_subscription)) {
-    $sql = "INSERT INTO subscriptions (user_id, userto_id) VALUES ($subscriber_id, $user_id)";
-    
-    $stml = db_get_prepare_stmt($link, $sql);
-    
-    $result = mysqli_stmt_execute($stml);
-    
-    if ($result) {
-        header("Location: $page_back");
-        die();
-    }
+if (!$is_user) {
+    header("Location: $page_back");
+    die();
 }
 
-$subsctibe_id = $check_subscription['id'];
+$is_subscription = is_exists_subscription($link, $subscriber_id, $user_id);
 
-$sql = "DELETE sub.* FROM subscriptions sub WHERE sub.id = $subsctibe_id";
+$sql = "DELETE sub.* FROM subscriptions sub WHERE sub.user_id = $subscriber_id AND sub.userto_id = $user_id";
 
-$stml = db_get_prepare_stmt($link, $sql);
+if (!$is_subscription) {
+    $sql = "INSERT INTO subscriptions (user_id, userto_id) VALUES ($subscriber_id, $user_id)";
+}
 
-$result = mysqli_stmt_execute($stml);
+$is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
 
-if ($result) {
+if ($is_succsess) {
     header("Location: $page_back");
     die();
 }

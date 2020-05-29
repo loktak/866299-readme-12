@@ -1,5 +1,6 @@
 <?php
 require_once('init.php');
+require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -9,53 +10,45 @@ $user_data = $_SESSION['user'];
 
 $active_page = 'popular';
 
-$expire = strtotime("+30 days");
-
-$path = "/popular.php";
-
 if (!empty($_GET)) {
     foreach ($_GET as $key => $value) {
-        if (isset($_GET[$key])) {
-            setcookie($key, $value, $expire, $path);
+        if (isset($_GET[$key]) && ($key === 'type' || $key === 'sorting' || $key === 'sort_value' || $key === 'current_page')) {
+            setcookie($key, $value, strtotime("+30 days"), '/popular.php');
             $_COOKIE[$key] = $value;
         }
     }
 }
 
 $sorting_parameters = [];
+// защищяемся от инъекций
+$sorting_parameters['sort_value'] = mysqli_real_escape_string($link, $_COOKIE['sort_value']) ?? 'views';
+$sorting_parameters['sorting'] =  mysqli_real_escape_string($link, $_COOKIE['sorting']) ?? 'DESC';
+$sorting_parameters['type'] = mysqli_real_escape_string($link, $_COOKIE['type']) ?? 'all';
 
-$sorting_parameters['sort_value'] = $_COOKIE['sort_value'] ?? 'views';
-$sorting_parameters['sorting'] = $_COOKIE['sorting'] ?? 'DESC';
-$sorting_parameters['type'] = $_COOKIE['type'] ?? 'all';
+$current_page = (int) $_COOKIE['current_page'] ?? 1;
 
-$current_page = $_COOKIE['current_page'] ?? 1;
 $page_items = 6;
-$posts_count = get_data($link, 'SELECT COUNT(*) as count FROM posts')[0]['count'];
-$pages_count = ceil($posts_count / $page_items);
-$offset = ($current_page - 1) * $page_items;
-
-$sort_value = $sorting_parameters['sort_value'];
-
-$sorting = $sorting_parameters['sorting'];
-
-if ((int) $posts_count <= 9 && (int) $posts_count > 0) {
-    $page_items = $posts_count;
-    $offset = 0;
-    $pages_count = 1;
-}
-$posts = popular_posts($link, $sort_value, $sorting, $page_items, $offset);
 
 if ($sorting_parameters['type'] !== 'all') {
-    $type = $sorting_parameters['type'];
-    $posts_count = get_data($link, "SELECT COUNT(*) as 'count' FROM posts p JOIN content_type ct ON ct.id = p.type_id WHERE ct.icon_type = '$type'")[0]['count'];
-    $pages_count = ceil($posts_count / $page_items);
-    $offset = ($current_page - 1) * $page_items;
-    if ((int) $posts_count <= 9 && (int) $posts_count > 0) {
-        $page_items = (int) $posts_count;
-        $offset = 0;
-        $pages_count = 1;
-    }
-    $posts = popular_posts_category_sorting($link, $type, $sort_value, $sorting, $page_items, $offset);
+    $posts_count = current(get_data($link, "SELECT COUNT(*) as 'count' FROM posts p JOIN content_type ct ON ct.id = p.type_id WHERE ct.icon_type = '" . $sorting_parameters['type'] . "'"))['count'];
+} else {
+    $posts_count = current(get_data($link, 'SELECT COUNT(*) as count FROM posts'))['count'];
+}
+
+$pages_count = ceil($posts_count / $page_items);
+
+$offset = ($current_page - 1) * $page_items;
+
+if ((int) $posts_count <= 9 && (int) $posts_count > 0) {
+    $offset = 0;
+    $pages_count = 1;
+    $page_items = 9;
+}
+
+if ($sorting_parameters['type'] !== 'all') {
+    $posts = popular_posts_category_sorting($link, $sorting_parameters['type'], $sorting_parameters['sort_value'], $sorting_parameters['sorting'], $page_items, $offset);
+} else {
+    $posts = popular_posts($link, $sorting_parameters['sort_value'], $sorting_parameters['sorting'], $page_items, $offset);
 }
 
 $popular_posts = include_template('popular/popular-posts.php', [
@@ -63,7 +56,6 @@ $popular_posts = include_template('popular/popular-posts.php', [
     'pages_count' => $pages_count,
     'current_page' => $current_page,
 ]);
-
 
 if (empty($posts)) {
     $popular_posts = include_template('no-content.php', []);
@@ -74,8 +66,6 @@ $page_content = include_template('main.php', [
     'sorting_parameters' => $sorting_parameters,
     'popular_posts' => $popular_posts
 ]);
-
-
 
 $layout_content = include_template('layout.php', [
     'content' => $page_content,

@@ -48,7 +48,7 @@
                 </div>
                 <footer class="post__footer">
                     <div class="post__author">
-                        <a class="post__author-link" href="profile.php?avtive_tab=posts&user_id=<?= $post['user_id'] ?>" title="Автор">
+                        <a class="post__author-link" href="profile.php?active_tab=posts&user_id=<?= $post['user_id'] ?>" title="Автор">
                             <div class="post__avatar-wrapper">
                                 <img class="post__author-avatar" width="40px" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя">
                             </div>

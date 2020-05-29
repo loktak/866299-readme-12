@@ -1,6 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
+require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -11,8 +12,6 @@ $user_data = $_SESSION['user'];
 $active_page = 'messages';
 
 $expire = strtotime("+30 days");
-
-$path = "/messages.php";
 
 $errors = [];
 
@@ -38,17 +37,16 @@ if (!empty($_GET['receiver_id'])) { // если не пустой гет зап�
     $receiver_id = $_GET['receiver_id'];
     $is_interclutor = check_interclutor($link, $profile_id, $receiver_id);
     if (!$is_interclutor) {
-        $sql = "SELECT u.* FROM users u WHERE id=$receiver_id";
-        if (empty(get_data($link, $sql))) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
+        $is_user = is_exists_user($link, $receiver_id);
+        if (!$is_user) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
             header("Location: /messages.php");
             die();
         }
         $sql = "INSERT INTO interlocutors (sender_id, receiver_id) VALUES ($profile_id, $receiver_id)";
-        $stml = db_get_prepare_stmt($link, $sql);
-        $result = mysqli_stmt_execute($stml);
+        $result = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
         header("Location: /messages.php");
     }
-    setcookie('user_id', $receiver_id, $expire, $path);
+    setcookie('user_id', $receiver_id, $expire, '/messages.php');
     $_COOKIE['user_id'] = $receiver_id;
 }
 
@@ -81,24 +79,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост �
     $errors = array_filter($errors);
 
     if (empty($errors)) { // если ошибок валидации нет, то при помощи транзакции, добавляем сообщение в сущность сообщения и меняем отправителя на авторизованного пользователя, получателя на собеседника и дату на сейчас
-        $message_content = $message['message'];
+        $message_content = mysqli_real_escape_string($link, $message['message']);
 
-        $receiver_id = $message['receiver_id'];
+        $receiver_id = (int) $message['receiver_id'];
 
         $sql_for_messages = "INSERT INTO messages (content, user_id, userto_id) VALUES ('$message_content', $profile_id, $receiver_id)";
 
         $sql_for_interlocutors = "UPDATE interlocutors SET sender_id = $profile_id, receiver_id = $receiver_id, last_message_date = CURRENT_TIMESTAMP 
         WHERE sender_id = $profile_id AND receiver_id = $receiver_id OR sender_id = $receiver_id AND receiver_id = $profile_id";
 
-        $stml_for_messages = db_get_prepare_stmt($link, $sql_for_messages);
-
-        $stml_for_interlocutors = db_get_prepare_stmt($link, $sql_for_interlocutors);
-
         mysqli_query($link, "START TRANSACTION");
 
-        $r1 = mysqli_stmt_execute($stml_for_messages);
+        $r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql_for_messages));
 
-        $r2 = mysqli_stmt_execute($stml_for_interlocutors);
+        $r2 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql_for_interlocutors));
 
         if (!$r1 && !$r2) { // если хотя бы один запрос не выполнен откатываем.
             mysqli_query($link, "ROLLBACK");
@@ -135,4 +129,3 @@ $layout_content = include_template('layout.php', [
 ]);
 
 print($layout_content);
-print_r($interlocutors);

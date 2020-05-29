@@ -17,34 +17,26 @@ if (empty($_GET['post_id'])) {
 
 $user_id = $user_data['id'];
 
-$post_id = $_GET['post_id'];
+$post_id = (int) $_GET['post_id']; //защита от иньекций
 
-$sql = "SELECT l.* FROM likes l WHERE l.post_id = $post_id AND l.user_id = $user_id";
+$is_post = is_exists_post($link, $post_id); //проверка на существование такого поста
 
-$check_like = get_data($link, $sql)[0] ?? NULL;
-
-if (empty($check_like)) {
-    $sql = "INSERT INTO likes (user_id, post_id) VALUES ($user_id, $post_id)";
-    
-    $stml = db_get_prepare_stmt($link, $sql);
-    
-    $result = mysqli_stmt_execute($stml);
-    
-    if ($result) {
-        header("Location: $page_back");
-        die();
-    }
+if (!$is_post) {
+    header("Location: $page_back");
+    die();
 }
 
-$like_id = $check_like['id'];
+$is_exists = is_exists_like($link, $post_id, $user_id);
 
-$sql = "DELETE l.*FROM likes l WHERE l.id = $like_id";
+$sql = "DELETE l.* FROM likes l WHERE l.post_id = $post_id AND l.user_id = $user_id";
 
-$stml = db_get_prepare_stmt($link, $sql);
+if (!$is_exists) {
+    $sql = "INSERT INTO likes (user_id, post_id) VALUES ($user_id, $post_id)";
+}
 
-$result = mysqli_stmt_execute($stml);
+$is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
 
-if ($result) {
+if ($is_succsess) {
     header("Location: $page_back");
     die();
 }

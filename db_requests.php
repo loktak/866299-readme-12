@@ -108,7 +108,6 @@ function get_posts_for_feed_by_category($link, $user_id, $category)
     JOIN content_type ct ON ct.id = p.type_id
     WHERE sub.user_id = $user_id AND ct.icon_type = '$category'
     ORDER BY p.post_date DESC";
-
     return get_data($link, $sql);
 }
 
@@ -140,7 +139,8 @@ function get_post_info($link, $post_id, $profile_id)
     IFNULL((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id), 0) AS subscribers,
     IFNULL((SELECT COUNT(*) FROM posts post WHERE post.original_id = p.id), 0) AS reposts,
     post.post_date AS original_date, us.login AS original_author_name, us.avatar AS original_author_avatar,
-    IFNULL ((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id AND sub.user_id = $profile_id ), 0) AS is_subscribed
+    IFNULL ((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id AND sub.user_id = $profile_id ), 0) AS is_subscribed,
+    IFNULL((SELECT COUNT(*) FROM posts post WHERE post.user_id = p.user_id), 0) AS user_posts
     FROM posts p
     JOIN users u ON p.user_id = u.id
     JOIN content_type ct ON p.type_id = ct.id
@@ -173,19 +173,6 @@ function get_post_comments($link, $post_id)
 
 
 /**
- * Функция список постов одного пользователя по id пользователя.
- * @param mysqli $link
- * @param string $user_id id пользователя
- * 
- * @return array двумерный массив данных
- */
-function get_user_posts_count($link, $user_id)
-{
-    $sql = "SELECT p.id FROM posts p WHERE user_id = $user_id";
-    return get_data($link, $sql);
-}
-
-/**
  * Функция вызывает данные поста по id поста.
  * @param mysqli $link
  * @param string $post_id id пользователя
@@ -215,33 +202,16 @@ function add_tags_to_db($link, $tags)
             $tags_id[] = $search_result['id'];
         } else {
             $values['title'] = $tag;
-            $tag_stml = db_get_prepare_stmt($link, $tag_sql, $values);
-            $result = mysqli_stmt_execute($tag_stml);
-            if ($result) {
-                $tags_id[] = mysqli_insert_id($link);
-            } else {
+            $result = mysqli_stmt_execute(db_get_prepare_stmt($link, $tag_sql, $values));
+            if (!$result) {
                 return 'не удалось добавить теги' . mysqli_error($link);
             }
+            $tags_id[] = mysqli_insert_id($link);
         }
     }
     return $tags_id;
 }
 
-/**
- * Функция добавляет пост в базу данных
- * @param mysqli $link
- * @param mysqli $stml подготовленное выражение
- * 
- * @return int id поста
- */
-function add_post_to_db($link, $stml)
-{
-    $result = mysqli_stmt_execute($stml);
-    if (!$result) {
-        return 'не удалось добавить пост' . mysqli_error($link);
-    }
-    return mysqli_insert_id($link);
-}
 
 /** 
  * Добавления поста вместе с тегами
@@ -254,14 +224,13 @@ function add_post_to_db($link, $stml)
 function add_tags_to_posts($link, $tags, $post_id)
 {
     $tags_id = add_tags_to_db($link, $tags);
+    $sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES";
     foreach ($tags_id as $tag_id) {
-        $tag_post_sql = "INSERT INTO hashtags_posts (tag_id, post_id) VALUES ($tag_id, $post_id)";
-        $tag_post_stml = mysqli_prepare($link, $tag_post_sql);
-        $result = mysqli_stmt_execute($tag_post_stml);
-        if (!$result) {
-            return 'ошбика' . mysqli_error($link);
-            break;
-        }
+        $sql .= " ($tag_id, $post_id),";
+    }
+    $result = mysqli_stmt_execute(mysqli_prepare($link, substr($sql, 0, -1)));
+    if (!$result) {
+        return 'ошбика' . mysqli_error($link);
     }
     return $result;
 }
@@ -384,7 +353,7 @@ function get_profile_data($link, $profile_id, $user_id)
  */
 function get_hashtags_for_post($link, $post_id)
 {
-    $sql = "SELECT h.title
+    $sql = "SELECT h.id, h.title
     FROM hashtags h
     JOIN hashtags_posts hp ON hp.tag_id = h.id
     WHERE hp.post_id = $post_id";
@@ -497,4 +466,72 @@ function get_interclutors($link, $profile_id)
     WHERE i.sender_id = $profile_id OR i.receiver_id = $profile_id";
 
     return get_data($link, $sql);
+}
+
+/**
+ * Проверяет ставил ли юзер лайк посту
+ * @param mysqli $link
+ * @param int $post_id id id поста
+ * @param int $user_id id юзера
+ * 
+ * @return BOOLEAN 
+ */
+function is_exists_like($link, $post_id, $user_id)
+{
+    $sql = "SELECT l.* FROM likes l WHERE l.post_id = $post_id AND l.user_id = $user_id";
+    $data = get_data($link, $sql);
+    if (!empty($data)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**
+ * Проверяет подписывался ли авторизованный пользователь на юзера
+ * @param mysqli $link
+ * @param int $subscriber_id id на кто подписывается
+ * @param int $user_id id на кого подписываются
+ * 
+ * @return BOOLEAN 
+ */
+function is_exists_subscription($link, $subscriber_id, $user_id)
+{
+    $sql = "SELECT sub.* FROM subscriptions sub WHERE sub.user_id = $subscriber_id AND sub.userto_id = $user_id";
+    $data = get_data($link, $sql);
+    if (!empty($data)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**
+ * Проверяет существование юзера в БД
+ * @param mysqli $link
+ * @param int $user_id id юзера
+ * 
+ * @return BOOLEAN 
+ */
+function is_exists_user($link, $user_id) {
+    $sql = "SELECT u.* FROM users u WHERE u.id = $user_id";
+    $data = get_data($link, $sql);
+    if (!empty($data)) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+/**
+ * Проверяет существование поста в БД
+ * @param mysqli $link
+ * @param int $post_id id юзера
+ * 
+ * @return BOOLEAN 
+ */
+function is_exists_post($link, $user_id) {
+    $sql = "SELECT p.* FROM posts p WHERE p.id = $user_id";
+    $data = get_data($link, $sql);
+    if (!empty($data)) {
+        return TRUE;
+    }
+    return FALSE;
 }
