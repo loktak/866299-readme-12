@@ -480,10 +480,9 @@ function is_exists_like($link, $post_id, $user_id)
 {
     $sql = "SELECT l.* FROM likes l WHERE l.post_id = $post_id AND l.user_id = $user_id";
     $data = get_data($link, $sql);
-    if (!empty($data)) {
-        return TRUE;
-    }
-    return FALSE;
+   
+    return !empty($data);
+
 }
 
 /**
@@ -498,10 +497,8 @@ function is_exists_subscription($link, $subscriber_id, $user_id)
 {
     $sql = "SELECT sub.* FROM subscriptions sub WHERE sub.user_id = $subscriber_id AND sub.userto_id = $user_id";
     $data = get_data($link, $sql);
-    if (!empty($data)) {
-        return TRUE;
-    }
-    return FALSE;
+
+    return !empty($data);
 }
 
 /**
@@ -514,10 +511,8 @@ function is_exists_subscription($link, $subscriber_id, $user_id)
 function is_exists_user($link, $user_id) {
     $sql = "SELECT u.* FROM users u WHERE u.id = $user_id";
     $data = get_data($link, $sql);
-    if (!empty($data)) {
-        return TRUE;
-    }
-    return FALSE;
+    
+    return !empty($data);
 }
 
 /**
@@ -530,8 +525,6 @@ function is_exists_user($link, $user_id) {
 function is_exists_post($link, $user_id) {
     $sql = "SELECT p.* FROM posts p WHERE p.id = $user_id";
     $data = get_data($link, $sql);
-    if (!empty($data)) {
-        return TRUE;
-    }
-    return FALSE;
+    
+    return !empty($data); 
 }

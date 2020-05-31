@@ -93,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['comment'] = 'не удалось добавить комментарий' . mysqli_error($link);
     }
 }
+
 if ($active_tab === 'posts' || $_SERVER['REQUEST_METHOD'] === 'POST') {
     $profile_tab = include_template('profile/profile-posts.php', [
         'posts' => $posts,

@@ -162,8 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$r1 && !$r2) { // если хотя бы один запрос не выполнен откатываем.
             mysqli_query($link, "ROLLBACK");
-            return print('не получилось сделать репост' . mysqli_error($link));
-            die();
+            die('не получилось сделать репост' . mysqli_error($link));
         }
         mysqli_query($link, "COMMIT");
         header("Location: post.php?post_id=" . $post_id);

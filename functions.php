@@ -251,14 +251,13 @@ function get_link_title($url)
  * @param mysqli $link
  * $param $post_id айди поста в котором надо прибавить просмотр
  * 
- * @return ошибку если будет
+ * @return mysqli ошибку если будет
  */
 function plus_view($link, $post_id)
 {
     $sql = "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
-    $stml = db_get_prepare_stmt($link, $sql);
-    $result = mysqli_stmt_execute($stml);
-    if (!$result) {
+    $is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
+    if (!$is_succsess) {
         return 'ошбика' . mysqli_error($link);
     }
 }
@@ -271,17 +270,40 @@ function plus_view($link, $post_id)
  */
 function get_profile_name_with_br($name)
 {
-    $name_array = explode(" ", $name);
-    if (count($name_array) > 1) {
-        $i = 0;
-        foreach ($name_array as $word) {
-            if ($i < (sizeof($name_array)-1) ) {
-                $word .= '<br>'; 
-            }
-            $new_name_array[] = $word;
-            $i++;
-        }
-        return implode($new_name_array);
-    }
-    return $name;
+    return implode('<br>', explode(" ", $name));
+}
+
+
+function last_message_date($post_upload_time)
+{
+    $current_time = new DateTime('now');
+    $interval = $post_upload_time->diff($current_time);
+
+    $month_name = [
+        '01' => 'Янв',
+        '02' => 'Фев',
+        '03' => 'Мар',
+        '04' => 'Апр',
+        '05' => 'Мая',
+        '06' => 'Июн',
+        '07' => 'Июл',
+        '08' => 'Авг',
+        '09' => 'Cент',
+        '10' => 'Окт',
+        '11' => 'Нояб',
+        '12' => 'Дек'
+       ];
+    
+       $months = $interval->format('%m');
+       $days = $interval->format('%d');
+
+       $years = $interval->format('%Y');
+
+    if ($years != 0) {
+        return $post_upload_time->format('Y г');
+    } elseif ($days != 0 || $months != 0) {
+        $month = $post_upload_time->format('m');
+        return $post_upload_time->format('d ' . $month_name[$month]);
+    } 
+    return  $post_upload_time->format('h:i');
 }

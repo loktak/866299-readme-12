@@ -18,9 +18,9 @@
                                 <p class="messages__preview-text">
                                     <?= ((int) $interlocutor['sender_id'] === (int) $user_data['id'] && !empty($interlocutor['last_message'])) ? 'Вы: ' . anti_xss($interlocutor['last_message']) : anti_xss($interlocutor['last_message']) ?>
                                 </p>
-                                <?php $message_date = new DateTime($interlocutor['last_message_date']); $month = $message_date->format('m')?>
-                                <time class="messages__preview-time" datetime="2019-05-01T14:40">
-                                    <?= $message_date->format('d ' . $month_name[$month])?>
+                                <?php $message_date = new DateTime($interlocutor['last_message_date'])?>
+                                <time class="messages__preview-time" title="<?= $message_date->format('d.m.Y H:i') ?>" datetime="<?= $message_date->format('Y-m-d H:i:s') ?> ?>">
+                                    <?= last_message_date($message_date) ?>
                                 </time>
                             </div>
                         </div>

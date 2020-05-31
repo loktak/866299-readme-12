@@ -11,30 +11,13 @@ $user_data = $_SESSION['user'];
 
 $active_page = 'messages';
 
-$expire = strtotime("+30 days");
-
 $errors = [];
 
 $profile_id = $user_data['id'];
 
-$month_name = [
- '01' => 'Янв',
- '02' => 'Фев',
- '03' => 'Мар',
- '04' => 'Апр',
- '05' => 'Мая',
- '06' => 'Июн',
- '07' => 'Июл',
- '08' => 'Авг',
- '09' => 'Cент',
- '10' => 'Окт',
- '11' => 'Нояб',
- '12' => 'Дек'
-];
-
 
 if (!empty($_GET['receiver_id'])) { // если не пустой гет запрос, проверяем, что есть такая связь в таблице контактов, если нет, то создаем ее
-    $receiver_id = $_GET['receiver_id'];
+    $receiver_id = (int) $_GET['receiver_id'];
     $is_interclutor = check_interclutor($link, $profile_id, $receiver_id);
     if (!$is_interclutor) {
         $is_user = is_exists_user($link, $receiver_id);
@@ -46,7 +29,7 @@ if (!empty($_GET['receiver_id'])) { // если не пустой гет зап�
         $result = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
         header("Location: /messages.php");
     }
-    setcookie('user_id', $receiver_id, $expire, '/messages.php');
+    setcookie('user_id', $receiver_id, strtotime("+30 days"), '/messages.php');
     $_COOKIE['user_id'] = $receiver_id;
 }
 
@@ -57,7 +40,7 @@ if ($receiver_id !== 0) {
     $cookie = "last_dialog_$id";
     $now = new DateTime();
     $date = $now->format('Y-m-d H:i:s');
-    setcookie($cookie, $date, $expire, "/");
+    setcookie($cookie, $date, strtotime("+30 days"), "/");
     $_COOKIE[$cookie] = $date;
 }
 
@@ -116,8 +99,7 @@ $page_content = include_template('messages-content.php', [
     'user_data' => $user_data,
     'receiver_id' => $receiver_id,
     'chat_content' => $chat_content,
-    'errors' => $errors,
-    'month_name' => $month_name
+    'errors' => $errors
 ]);
 
 $layout_content = include_template('layout.php', [
