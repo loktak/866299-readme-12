@@ -1,14 +1,13 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
-require_once('interlocutors.php');
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
 }
 
 $user_data = $_SESSION['user'];
-$active_page = 'profile.php';
 
 $errors = [];
 $hashtags = [];
@@ -25,7 +24,7 @@ if (isset($_GET['user_id'])) { // проверяем есть ли такой ю
 
 if (!empty($_GET)) {
     foreach ($_GET as $key => $value) {
-        if (isset($_GET[$key]) && ($key === 'user_id' || $key === 'active_tab')) {
+        if (isset($_GET[$key]) && in_array($key, ['user_id', 'active_tab', 'comments_for'])) {
             setcookie($key, $value, strtotime("+30 days"), '/profile.php');
             $_COOKIE[$key] = $value;
         }
@@ -77,18 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = array_filter($errors);
 
-    if (empty($errors)) {
-        $sql = "INSERT INTO comments (content, user_id, post_id) VALUES (?, ?, ?)";
-        $comment_data = [
-            'content' => $comment['comment'],
-            'user_id' => $user_data['id'],
-            'post_id' => $comment['post_id'],
-        ];
-        $stml = db_get_prepare_stmt($link, $sql, $comment_data);
-        $result = mysqli_stmt_execute($stml);
-        if ($result) {
-            $id = $comment['author_id'];
-            header("Location: profile.php?user_id=$id");
+   if (empty($errors)) {
+        $is_success = comment_to_db($link, $comment, $profile_id);
+        if ($is_success) {
+            header("Location: profile.php?user_id={$comment['author_id']}");
+            die();
         }
         $errors['comment'] = 'не удалось добавить комментарий' . mysqli_error($link);
     }
@@ -142,8 +134,8 @@ $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Профиль пользователя',
     'user_data' => $user_data,
-    'active_page' => $active_page,
-    'unreaded_messages_count' => $unreaded_messages_count,
+    'active_page' => 'profile',
+    'unread_messages_count' => $unread_messages_count,
 ]);
 
 print($layout_content);

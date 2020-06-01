@@ -5,7 +5,7 @@ if (!empty($user_data)) {
 
     $interlocutors = get_interclutors($link, $profile_id); //получаем список собеседников
     
-    $unreaded_messages_count = 0;
+    $unread_messages_count = 0;
     
     
     foreach ($interlocutors as $key => $interlocutor) {
@@ -25,6 +25,7 @@ if (!empty($user_data)) {
             $result = get_data($link, $sql)[0];     
         }
         $interlocutors[$key]['new_messages'] = $result['new_messages'] ?? 0;
-        $unreaded_messages_count = $unreaded_messages_count + $interlocutors[$key]['new_messages'];
+        $unread_messages_count = $unread_messages_count + $interlocutors[$key]['new_messages'];
     }
+    return [$unread_messages_count, $interlocutors, $profile_id];
 }

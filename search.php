@@ -1,9 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
-require_once('interlocutors.php');
-
-$active_page = 'search';
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -23,7 +21,7 @@ if (empty($search_request)) {
         'content' => $page_content,
         'title' => 'Readme Публикация',
         'user_data' => $user_data,
-        'active_page' => $active_page
+        'active_page' => 'search'
 
     ]);
     die($layout_content);
@@ -52,7 +50,8 @@ $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Результаты поиска',
     'user_data' => $user_data,
-    'unreaded_messages_count' => $unreaded_messages_count
+    'unread_messages_count' => $unread_messages_count,
+    'active_page' => 'search'
 ]);
 
 print($layout_content);

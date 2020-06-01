@@ -35,7 +35,7 @@ $type_id = (int) $post_info['type_id'];
 $original_author_id = $post_info['user_id'];
 $original_id = $post_info['id'];
 
-if (!empty($post_info['original_id'])) {  // делает так что повторный репост не возможен
+if (!empty($post_info['original_id'])) {  // делает так что при репосте репоста репостится оригинал
     $original_id = $post_info['original_id'];
 }
 
@@ -73,7 +73,7 @@ if ($type_id === QUOTE) {
 
 mysqli_query($link, "START TRANSACTION");
 
-$r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $repost_info));
+$is_r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $repost_info));
 
 $post_id = mysqli_insert_id($link);
 
@@ -83,9 +83,9 @@ foreach ($hashtags as $hashtag) {
     $sql .=  ' (' . $hashtag['id'] . ", $post_id),";
 }
 
-$r2 = mysqli_stmt_execute(db_get_prepare_stmt($link, substr($sql, 0, -1)));
+$is_r2 = mysqli_stmt_execute(db_get_prepare_stmt($link, substr($sql, 0, -1)));
 
-if (!$r1 && !$r2) { // если хотя бы один запрос не выполнен откатываем.
+if (!$is_r1 && !$is_r2) { // если хотя бы один запрос не выполнен откатываем.
     mysqli_query($link, "ROLLBACK");
     return print('не получилось сделать репост' . mysqli_error($link));
     die();

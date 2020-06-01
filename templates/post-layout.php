@@ -92,10 +92,10 @@
                 </li>
                 <?php endforeach ?>
               </ul>
-              <?php if ($hidded_comments_count !== NULL) :?>
+              <?php if ($hidden_comments_count !== NULL) :?>
               <a class="comments__more-link" href="<?= $_SERVER['REQUEST_URI']. "&show_comments=all" ?>">
                 <span>Показать все комментарии</span>
-                <sup class="comments__amount"><?= $hidded_comments_count ?></sup>
+                <sup class="comments__amount"><?= $hidden_comments_count ?></sup>
               </a>
               <?php endif ?>
             </div>

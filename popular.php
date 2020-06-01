@@ -1,6 +1,6 @@
 <?php
 require_once('init.php');
-require_once('interlocutors.php');
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -8,11 +8,10 @@ if (!isset($_SESSION['user'])) {
 
 $user_data = $_SESSION['user'];
 
-$active_page = 'popular';
 
 if (!empty($_GET)) {
     foreach ($_GET as $key => $value) {
-        if (isset($_GET[$key]) && ($key === 'type' || $key === 'sorting' || $key === 'sort_value' || $key === 'current_page')) {
+        if (isset($_GET[$key]) && in_array($key, ['type', 'sorting', 'sort_value', 'current_page'])) {
             setcookie($key, $value, strtotime("+30 days"), '/popular.php');
             $_COOKIE[$key] = $value;
         }
@@ -71,8 +70,8 @@ $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Популярный контент',
     'user_data' => $user_data,
-    'active_page' => $active_page,
-    'unreaded_messages_count' => $unreaded_messages_count
+    'active_page' => 'popular',
+    'unread_messages_count' => $unread_messages_count
 ]);
 
 print($layout_content);

@@ -154,7 +154,7 @@
                                                 <a class="header__profile-nav-link" href="messages.php">
                                                     <span class="header__profile-nav-text">
                                                         Сообщения
-                                                        <?= ((int)$unreaded_messages_count > 0) ? '<i class="header__profile-indicator">' . $unreaded_messages_count . '</i>' : "" ?>
+                                                        <?= ((int)$unread_messages_count > 0) ? '<i class="header__profile-indicator">' . $unread_messages_count . '</i>' : "" ?>
                                                     </span>
                                                 </a>
                                             </li>

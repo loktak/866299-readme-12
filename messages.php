@@ -1,7 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
-require_once('interlocutors.php');
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -9,7 +9,6 @@ if (!isset($_SESSION['user'])) {
 
 $user_data = $_SESSION['user'];
 
-$active_page = 'messages';
 
 $errors = [];
 
@@ -18,15 +17,14 @@ $profile_id = $user_data['id'];
 
 if (!empty($_GET['receiver_id'])) { // если не пустой гет запрос, проверяем, что есть такая связь в таблице контактов, если нет, то создаем ее
     $receiver_id = (int) $_GET['receiver_id'];
-    $is_interclutor = check_interclutor($link, $profile_id, $receiver_id);
-    if (!$is_interclutor) {
+    if (! is_interlocutor_exist($link, $profile_id, $receiver_id)) {
         $is_user = is_exists_user($link, $receiver_id);
         if (!$is_user) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
             header("Location: /messages.php");
             die();
         }
         $sql = "INSERT INTO interlocutors (sender_id, receiver_id) VALUES ($profile_id, $receiver_id)";
-        $result = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
+        $is_result = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
         header("Location: /messages.php");
     }
     setcookie('user_id', $receiver_id, strtotime("+30 days"), '/messages.php');
@@ -36,10 +34,8 @@ if (!empty($_GET['receiver_id'])) { // если не пустой гет зап�
 $receiver_id = $_COOKIE['user_id'] ?? 0; // с кем диалог
 
 if ($receiver_id !== 0) {
-    $id = $receiver_id;
-    $cookie = "last_dialog_$id";
-    $now = new DateTime();
-    $date = $now->format('Y-m-d H:i:s');
+    $cookie = "last_dialog_$receiver_id";
+    $date = (new DateTime())->format('Y-m-d H:i:s');
     setcookie($cookie, $date, strtotime("+30 days"), "/");
     $_COOKIE[$cookie] = $date;
 }
@@ -47,6 +43,7 @@ if ($receiver_id !== 0) {
 $messages = get_chat_messages($link, $profile_id, $receiver_id); //получаем список сообщений между авторизованным пользователем  и собеседником
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост запрос, то проводим валидацию
+    $message = [];
     foreach ($_POST as $key => $value) {
         $message[$key] = trim($value);
     }
@@ -85,13 +82,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост �
     }
 }
 
-$chat_content = include_template('messages/chat-messages.php', [
-    'messages' => $messages,
-    'user_data' => $user_data
-]);
-
 if (empty($messages)) { // если сообщений нет, выводим пустую страницу  листиком
     $chat_content = include_template('no-content.php', []);
+} else {
+    $chat_content = include_template('messages/chat-messages.php', [
+        'messages' => $messages,
+        'user_data' => $user_data
+    ]); 
 }
 
 $page_content = include_template('messages-content.php', [
@@ -106,8 +103,8 @@ $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Мои сообщения',
     'user_data' => $user_data,
-    'unreaded_messages_count' => $unreaded_messages_count,
-    'active_page' => $active_page
+    'unread_messages_count' => $unread_messages_count,
+    'active_page' => 'messages'
 ]);
 
 print($layout_content);

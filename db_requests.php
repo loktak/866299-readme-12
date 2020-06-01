@@ -424,6 +424,23 @@ function get_chat_messages($link, $user_one, $user_two)
     return get_data($link, $sql);
 }
 
+/**
+ * Вызывает список юзеров с кем у пользователя есть чат
+ * @param mysqli $link
+ * @param string $sql запрос в базу данных 
+ * 
+ * @return BOOLEAN
+ */
+function is_exist($link, $sql)
+{
+    $result = mysqli_query($link, $sql);
+
+    if (!$result) {
+        die('Ошибка MySQL: ' . mysqli_error($link));
+    }
+
+    return mysqli_num_rows($result) > 0;
+}
 
 /**
  * Вызывает список юзеров с кем у пользователя есть чат
@@ -431,26 +448,21 @@ function get_chat_messages($link, $user_one, $user_two)
  * @param int $user_one id первого пользователя
  * @param int $user_two id второго пользователя
  * 
- * @return array массив c cообщениями
+ * @return BOOLEAN
  */
-function check_interclutor($link, $profile_id, $user_id)
+function is_interlocutor_exist($link, $user_one, $user_two)
 {
     $sql = "SELECT i.*
     FROM interlocutors i
-    WHERE i.sender_id = $profile_id AND i.receiver_id = $user_id OR i.sender_id = $user_id AND i.receiver_id = $profile_id";
+    WHERE i.sender_id = $user_one AND i.receiver_id = $user_two  OR i.sender_id = $user_two AND i.receiver_id = $user_one";
 
-    if (!empty(get_data($link, $sql))) {
-        return TRUE;
-    }
-
-    return FALSE;
+    return is_exist($link, $sql);
 }
 
 /**
  * Вызывает список юзеров с кем у пользователя есть чат
  * @param mysqli $link
  * @param int $profile_id id первого пользователя
- * @param int $recived_id id второго пользователя
  * 
  * @return array массив c собеседниками
  */
@@ -479,10 +491,8 @@ function get_interclutors($link, $profile_id)
 function is_exists_like($link, $post_id, $user_id)
 {
     $sql = "SELECT l.* FROM likes l WHERE l.post_id = $post_id AND l.user_id = $user_id";
-    $data = get_data($link, $sql);
-   
-    return !empty($data);
 
+    return is_exist($link, $sql);
 }
 
 /**
@@ -496,9 +506,8 @@ function is_exists_like($link, $post_id, $user_id)
 function is_exists_subscription($link, $subscriber_id, $user_id)
 {
     $sql = "SELECT sub.* FROM subscriptions sub WHERE sub.user_id = $subscriber_id AND sub.userto_id = $user_id";
-    $data = get_data($link, $sql);
 
-    return !empty($data);
+    return is_exist($link, $sql);
 }
 
 /**
@@ -508,11 +517,11 @@ function is_exists_subscription($link, $subscriber_id, $user_id)
  * 
  * @return BOOLEAN 
  */
-function is_exists_user($link, $user_id) {
+function is_exists_user($link, $user_id)
+{
     $sql = "SELECT u.* FROM users u WHERE u.id = $user_id";
-    $data = get_data($link, $sql);
-    
-    return !empty($data);
+
+    return is_exist($link, $sql);
 }
 
 /**
@@ -522,9 +531,29 @@ function is_exists_user($link, $user_id) {
  * 
  * @return BOOLEAN 
  */
-function is_exists_post($link, $user_id) {
+function is_exists_post($link, $user_id)
+{
     $sql = "SELECT p.* FROM posts p WHERE p.id = $user_id";
-    $data = get_data($link, $sql);
-    
-    return !empty($data); 
+
+    return is_exist($link, $sql);
+}
+
+
+/**
+ * Функция добавляет комментарий к посту
+ * @param mysqli $link
+ * @param array $comment_data данные коментария
+ * @param int $profile_id id авторизованого пользователя
+ * 
+ * @return BOOLEAN 
+ */
+function comment_to_db($link, $comment_data, $profile_id)
+{
+    $sql = "INSERT INTO comments (content, user_id, post_id) VALUES (?, ?, ?)";
+    $comment_data = [
+        'content' => $comment_data['comment'],
+        'user_id' => (int) $profile_id,
+        'post_id' => (int) $comment_data['post_id']
+    ];
+    return mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $comment_data));
 }

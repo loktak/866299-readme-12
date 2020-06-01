@@ -1,13 +1,12 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
-require_once('interlocutors.php');
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
   header("Location: /index.php");
 }
 
-$active_page = 'feed';
 $user_data = $_SESSION['user'];
 
 $page_parameters['type'] = $_GET['type'] ?? 'all';
@@ -33,8 +32,8 @@ $layout_content = include_template('layout.php', [
   'content' => $page_content,
   'title' => 'Readme: Моя лента',
   'user_data' => $user_data,
-  'active_page' => $active_page,
-  'unreaded_messages_count' => $unreaded_messages_count
+  'active_page' => 'feed',
+  'unread_messages_count' => $unread_messages_count
 ]);
 
 print($layout_content);

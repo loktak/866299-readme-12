@@ -1,15 +1,13 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
-require_once('interlocutors.php');
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
 }
 
 $user_data = $_SESSION['user'];
-
-$active_page = 'add';
 
 $page_parameters['form-type'] = $_GET['type'] ?? 'photo';
 $page_parameters['heading'] = $_POST['heading'] ?? 'default';
@@ -154,15 +152,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         mysqli_query($link, "START TRANSACTION");
 
-        $r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $db_post));
+        $is_r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $db_post));
 
         $post_id = mysqli_insert_id($link);
 
-        $r2 = add_tags_to_posts($link, $tags, $post_id);
+        $is_r2 = add_tags_to_posts($link, $tags, $post_id);
 
-        if (!$r1 && !$r2) { // если хотя бы один запрос не выполнен откатываем.
+        if (!$is_r1 && !$is_r2) { // если хотя бы один запрос не выполнен откатываем.
             mysqli_query($link, "ROLLBACK");
-            die('не получилось сделать репост' . mysqli_error($link));
+            die('не получилось добавить пост' . mysqli_error($link));
         }
         mysqli_query($link, "COMMIT");
         header("Location: post.php?post_id=" . $post_id);
@@ -186,8 +184,8 @@ $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Добавить пост',
     'user_data' => $user_data,
-    'active_page' => $active_page,
-    'unreaded_messages_count' => $unreaded_messages_count
+    'active_page' => 'add',
+    'unread_messages_count' => $unread_messages_count
 ]);
 
 print($layout_content);

@@ -1,15 +1,13 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
-require_once('interlocutors.php');
+list($unread_messages_count, $interlocutors) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
 }
 
 $user_data = $_SESSION['user'];
-
-$active_page = 'post';
 
 $errors = [];
 $show_comments = $_GET['show_comments'] ?? null;
@@ -27,7 +25,7 @@ if ($post_id === null || empty(get_post_info($link, $post_id, $profile_id))) { /
         'content' => $page_content,
         'title' => 'Readme Публикация не найдена',
         'user_data' => $user_data,
-        'unreaded_messages_count' => $unreaded_messages_count
+        'unread_messages_count' => $unread_messages_count
     ]);
     die(print($layout_content));
 }
@@ -66,14 +64,14 @@ switch ($post_info['icon_type']) {
 
 $comments = get_post_comments($link, $post_info['id']);
 $comments_count = count($comments);
-$hidded_comments_count = null;
+$hidden_comments_count = null;
 if ($comments_count > 2 && $show_comments !== 'all') {
     $cutted_comments = [
         '0' => $comments[0],
         '1' => $comments[1],
     ];
     $comments = $cutted_comments;
-    $hidded_comments_count = $comments_count - 2;
+    $hidden_comments_count = $comments_count - 2;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -92,17 +90,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = array_filter($errors);
 
     if (empty($errors)) {
-        $sql = "INSERT INTO comments (content, user_id, post_id) VALUES (?, ?, ?)"; //прочитал, что надо защищаться от инъекций в пост запросах тоже. так как их даже hidden легко подделать
-        $comment_data = [
-            'content' => mysqli_real_escape_string($link, $comment['comment']),
-            'user_id' => (int) $user_data['id'],
-            'post_id' => (int) $comment['post_id'],
-        ];
-        $stml = db_get_prepare_stmt($link, $sql, $comment_data);
-        $result = mysqli_stmt_execute($stml);
-        if ($result) {
-            $id = $comment['author_id'];
-            header("Location: profile.php?user_id=$id");
+        $is_success = comment_to_db($link, $comment, $profile_id);
+        if ($is_success) {
+            header("Location: profile.php?user_id={$comment['author_id']}");
+            die();
         }
         $errors['comment'] = 'не удалось добавить комментарий' . mysqli_error($link);
     }
@@ -114,15 +105,16 @@ $page_content = include_template('post-layout.php', [
     'user_data' => $user_data,
     'errors' => $errors,
     'comments' => $comments,
-    'hidded_comments_count' => $hidded_comments_count,
+    'hidden_comments_count' => $hidden_comments_count,
 ]);
 
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme Публикация',
     'user_data' => $user_data,
-    'unreaded_messages_count' => $unreaded_messages_count,
-    'active_page' => $active_page,
+    'unread_messages_count' => $unread_messages_count,
+    'active_page' => 'post'
 ]);
 
 print($layout_content);
+print($is_success);

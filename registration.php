@@ -49,10 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'avatar' => $file_name,
         ];
 
-        $stml = db_get_prepare_stmt($link, $sql, $user);
-        $result = mysqli_stmt_execute($stml);
+        $is_success = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $user));
 
-        if ($result) {
+        if ($is_success) {
             header("Location: index.php");
         }
 
