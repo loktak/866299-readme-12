@@ -92,7 +92,7 @@ function anti_xss($user_content)
  * @author Arseny Spirin <spirinars@ya.ru>
  */
 
-function time_ago($post_upload_time)
+function time_ago($post_upload_time, $ago_text =" назад")
 {
     $current_time = new DateTime('now');
     $interval = $post_upload_time->diff($current_time);
@@ -106,20 +106,20 @@ function time_ago($post_upload_time)
 
     if ($years != 0) {
         $years = floor($years);
-        $ago = $years . ' ' . plural_form($years, array('год', 'года', 'лет')) . ' назад';
+        $ago = $years . ' ' . plural_form($years, array('год', 'года', 'лет')) . $ago_text;
     } elseif ($months != 0) {
         $months = floor($months);
-        $ago = $months . ' ' . plural_form($months, array('месец', 'месеца', 'месецев')) . ' назад';
+        $ago = $months . ' ' . plural_form($months, array('месец', 'месеца', 'месецев')) . $ago_text;
     } elseif ($days > 7 && $days < 35) {
         $week = floor($days / 7);
-        $ago = $week . ' ' . plural_form($week, array('неделю', 'недели', 'недель')) . ' назад';
+        $ago = $week . ' ' . plural_form($week, array('неделю', 'недели', 'недель')) . $ago_text;
     } elseif ($days != 0) {
-        $ago = $days . ' ' . plural_form($days, array('день', 'дня', 'дней')) . ' назад';
+        $ago = $days . ' ' . plural_form($days, array('день', 'дня', 'дней')) . $ago_text;
     } elseif ($hours != 0) {
         $hours = floor($hours);
-        $ago = $hours . ' ' . plural_form($hours, array('час', 'часа', 'часов')) . ' назад';
+        $ago = $hours . ' ' . plural_form($hours, array('час', 'часа', 'часов')) . $ago_text;
     } elseif ($minutes != 0) {
-        $ago = $minutes . ' ' . plural_form($minutes, array('минуту', 'минуты', 'минут')) . ' назад';
+        $ago = $minutes . ' ' . plural_form($minutes, array('минуту', 'минуты', 'минут')) . $ago_text;
     } else {
         $ago = 'меньше минуты назад';
     }
@@ -243,7 +243,7 @@ function get_link_title($url)
     $site = file_get_contents($url);
     if (preg_match('/<title>([^<]*)<\/title>/', $site, $matches) == 1) {
         return $matches[1];
-    } 
+    }
 }
 
 /**
@@ -251,13 +251,59 @@ function get_link_title($url)
  * @param mysqli $link
  * $param $post_id айди поста в котором надо прибавить просмотр
  * 
- * @return ошибку если будет
+ * @return mysqli ошибку если будет
  */
-function plus_view($link, $post_id) {
-    $sql= "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
-    $stml = db_get_prepare_stmt($link, $sql);
-    $result = mysqli_stmt_execute($stml);
-    if (!$result) {
+function plus_view($link, $post_id)
+{
+    $sql = "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
+    $is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
+    if (!$is_succsess) {
         return 'ошбика' . mysqli_error($link);
     }
+}
+
+/**
+ * Функция проверяет заданное имя и если оно состоит из нескольких слов добавляет <br>
+ * @param string $name
+ * 
+ * @return string $name_with_br
+ */
+function get_profile_name_with_br($name)
+{
+    return implode('<br>', explode(" ", $name));
+}
+
+
+function last_message_date($post_upload_time)
+{
+    $current_time = new DateTime('now');
+    $interval = $post_upload_time->diff($current_time);
+
+    $month_name = [
+        '01' => 'Янв',
+        '02' => 'Фев',
+        '03' => 'Мар',
+        '04' => 'Апр',
+        '05' => 'Мая',
+        '06' => 'Июн',
+        '07' => 'Июл',
+        '08' => 'Авг',
+        '09' => 'Cент',
+        '10' => 'Окт',
+        '11' => 'Нояб',
+        '12' => 'Дек'
+       ];
+    
+       $months = $interval->format('%m');
+       $days = $interval->format('%d');
+
+       $years = $interval->format('%Y');
+
+    if ($years != 0) {
+        return $post_upload_time->format('Y г');
+    } elseif ($days != 0 || $months != 0) {
+        $month = $post_upload_time->format('m');
+        return $post_upload_time->format('d ' . $month_name[$month]);
+    } 
+    return  $post_upload_time->format('h:i');
 }

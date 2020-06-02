@@ -9,7 +9,7 @@
                 <?php foreach ($posts as $post) : ?>
                     <article class="feed__post post post-<?= $post['type'] ?>">
                         <header class="post__header post__author">
-                            <a class="post__author-link" href="#" title="Автор">
+                            <a class="post__author-link" href="profile.php?user_id=<?= $post['user_id']?>&active_tab=posts" title="Автор">
                                 <div class="post__avatar-wrapper">
                                     <img class="post__author-avatar" src="userpics/<?= $post['avatar'] ?>" alt="Аватар пользователя" width="60" height="60">
                                 </div>
@@ -41,9 +41,9 @@
                                     </blockquote>
                                 <?php elseif ($post['type'] === 'link') : ?>
                                     <div class="post-link__wrapper">
-                                        <a class="post-link__external" href="<?= anti_xss($post['link']) ?>" title="Перейти по ссылке">
+                                        <a class="post-link__external" href="<?= anti_xss($post['link']) ?>" target="_blank" title="Перейти по ссылке">
                                             <div class="post-link__icon-wrapper">
-                                                <img src="https://www.google.com/s2/favicons?domain=<?= $post['link']?>" alt="Иконка">
+                                                <img src="https://www.google.com/s2/favicons?domain=<?= $post['link'] ?>" alt="Иконка">
                                             </div>
                                             <div class="post-link__info">
                                                 <h3><?= anti_xss($post['title']) ?></h3>
@@ -59,7 +59,7 @@
                                 </div>
                                 <footer class="post__footer post__indicators">
                                     <div class="post__buttons">
-                                        <a class="post__indicator post__indicator--likes button" href="#" title="Лайк">
+                                        <a class="post__indicator post__indicator--likes button" href="like.php?post_id=<?= $post['id'] ?>" title="Лайк">
                                             <svg class="post__indicator-icon" width="20" height="17">
                                                 <use xlink:href="#icon-heart"></use>
                                             </svg>
@@ -69,7 +69,7 @@
                                             <span><?= $post['likes'] ?></span>
                                             <span class="visually-hidden">количество лайков</span>
                                         </a>
-                                        <a class="post__indicator post__indicator--comments button" href="#" title="Комментарии">
+                                        <a class="post__indicator post__indicator--comments button" href="post.php?post_id=<?= $post['id'] ?>#last-comment" title="Комментарии">
                                             <svg class="post__indicator-icon" width="19" height="17">
                                                 <use xlink:href="#icon-comment"></use>
                                             </svg>
@@ -84,6 +84,11 @@
                                             <span class="visually-hidden">количество репостов</span>
                                         </a>
                                     </div>
+                                    <ul class="post__tags">
+                                        <?php foreach ($hashtags[$post['id']] as $key => $value) : ?>
+                                            <li><a href="search.php?search_request=%23<?= $value['title'] ?>">#<?= $value['title'] ?></a></li>
+                                        <?php endforeach ?>
+                                    </ul>
                                 </footer>
                     </article>
                 <?php endforeach ?>

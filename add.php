@@ -1,6 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
+list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -149,20 +150,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $tags = tags_to_array($posts['tags']); //делаем из строки с тегами массив без повторяющихся тегов
 
-        $stml = db_get_prepare_stmt($link, $sql, $db_post);
+        mysqli_query($link, "START TRANSACTION");
 
-        $post_id = add_post_to_db($link, $stml);
+        $is_r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $db_post));
 
-        $result = add_tags_to_posts($link, $tags, $post_id);
+        $post_id = mysqli_insert_id($link);
 
-        if ($result) {
-            header("Location: post.php?post_id=" . $post_id);
+        $is_r2 = add_tags_to_posts($link, $tags, $post_id);
+
+        if (!$is_r1 && !$is_r2) { // если хотя бы один запрос не выполнен откатываем.
+            mysqli_query($link, "ROLLBACK");
+            die('не получилось добавить пост' . mysqli_error($link));
         }
+        mysqli_query($link, "COMMIT");
+        header("Location: post.php?post_id=" . $post_id);
     }
 }
 
 $page_parameters['name'] = get_russian_form_name($page_parameters['form-type']); //названия для формы формы
-
 
 $content = include_template("add-post/add-" . $page_parameters['form-type'] . "-post.php", [
     'errors' => $errors
@@ -178,7 +183,9 @@ $page_content = include_template('add-post.php', [
 $layout_content = include_template('layout.php', [
     'content' => $page_content,
     'title' => 'Readme: Добавить пост',
-    'user_data' => $user_data
+    'user_data' => $user_data,
+    'active_page' => 'add',
+    'unread_messages_count' => $unread_messages_count
 ]);
 
 print($layout_content);

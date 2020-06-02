@@ -114,7 +114,7 @@ function check_tags($tags)
  * 
  * @return string Ошибку если валидация не прошла
  */
-function validate_lenght($text, $min = 3, $max = 25)
+function validate_lenght($text, $min = 3, $max = 40)
 {
   if (mb_strlen($text) < $min || mb_strlen($text) > $max) {
     return "Значение поля должно быть не меньше $min и не больше $max символов";
@@ -207,12 +207,13 @@ function get_img_by_link($url)
  * 
  * @return string путь до загруженного файла
  */
-function get_file_path($url, $file_name)
+
+ function get_file_path($url, $file_name)
 {
   if (!$file_name) {
     $file_name = basename($url);
   }
-  return "uploads/$file_name";
+  return $file_name;
 }
 
 /** 
