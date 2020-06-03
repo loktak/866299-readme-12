@@ -1,6 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
+require_once('mail_settings.php');
 list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {
@@ -163,6 +164,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             die('не получилось добавить пост' . mysqli_error($link));
         }
         mysqli_query($link, "COMMIT");
+
+        $recipients = get_recipients($link, $profile_id);
+       
+        foreach ($recipients as $recipient) {
+            $message_layout = include_template('add-post/message_to_subscribers.php', [
+                'author' => $user_data['login'],
+                'post_id' => $post_id,
+                'recipient' => $recipient,
+                'profile_id' => $profile_id,
+                'post_title' => $db_post['title']
+            ]);
+            $message = (new Swift_Message("Новая публикация от пользователя"))
+                ->setFrom(['keks@phpdemo.ru' => 'readme'])
+                ->setTo([$recipient['email'] => $recipient['name']])
+                ->setBody($message_layout, 'text/html');
+            $result = $mailer->send($message);
+        }
+
         header("Location: post.php?post_id=" . $post_id);
     }
 }

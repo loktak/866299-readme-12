@@ -1,6 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
+require_once('mail_settings.php');
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -37,6 +38,20 @@ if (!$is_subscription) {
 $is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
 
 if ($is_succsess) {
+    if (!$is_subscription) {
+        $recipient = current(get_recipients($link, $user_id, 'subscription'));
+        $message_layout = include_template('new_subscriber_message.php', [
+            'subscriber' => $user_data['login'],
+            'recipient' => $recipient,
+            'subscriber_id' => $subscriber_id,
+        ]);
+        $message = (new Swift_Message("У вас новый подписчик"))
+            ->setFrom(['keks@phpdemo.ru' => 'readme'])
+            ->setTo([$recipient['email'] => $recipient['name']])
+            ->setBody($message_layout, 'text/html');
+        $result = $mailer->send($message);
+    }
+
     header("Location: $page_back");
     die();
 }

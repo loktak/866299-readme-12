@@ -557,3 +557,21 @@ function comment_to_db($link, $comment_data, $profile_id)
     ];
     return mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $comment_data));
 }
+
+
+/**
+ * Функция получает список имен и адресов электронной почты для отправки уведомлений
+ * @param mysqli $link
+ * @param int $profile_id
+ * @param string $page
+ * 
+ * @return array массив c собеседниками
+ */
+function get_recipients($link, $profile_id, $page = 'add')
+{
+    $sql = "SELECT u.login AS name, u.email FROM users u JOIN subscriptions sub ON u.id = sub.user_id WHERE sub.userto_id = $profile_id";
+    if ($page === 'subscription') {
+        $sql = "SELECT u.login AS name, u.email FROM users u WHERE u.id = $profile_id";
+    }
+    return get_data($link, $sql);
+}
