@@ -40,15 +40,18 @@ $is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
 if ($is_succsess) {
     if (!$is_subscription) {
         $recipient = current(get_recipients($link, $user_id, 'subscription'));
-        $message_layout = include_template('new_subscriber_message.php', [
+        $notification_content = include_template('notifications/new_subscriber.php', [
             'subscriber' => $user_data['login'],
             'recipient' => $recipient,
             'subscriber_id' => $subscriber_id,
         ]);
+        $notification = include_template('notifications/notification-layout.php', [
+            'notification_content' => $notification_content
+        ]);
         $message = (new Swift_Message("У вас новый подписчик"))
             ->setFrom(['keks@phpdemo.ru' => 'readme'])
             ->setTo([$recipient['email'] => $recipient['name']])
-            ->setBody($message_layout, 'text/html');
+            ->setBody($notification, 'text/html');
         $result = $mailer->send($message);
     }
 

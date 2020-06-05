@@ -2,11 +2,9 @@
     "name": "spiri/866299-readme-12",
     "authors": [
         {
-            "name": "Arseniy",
-            "email": "spirinars@yandex.ru"
+            "name": "loktak",
+            "email": "spirinars@ya.ru"
         }
     ],
-    "require": {
-        "swiftmailer/swiftmailer": "6.0"
-    }
+    "require": {}
 }

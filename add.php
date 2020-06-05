@@ -168,17 +168,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $recipients = get_recipients($link, $profile_id);
        
         foreach ($recipients as $recipient) {
-            $message_layout = include_template('add-post/message_to_subscribers.php', [
+            $notification_content = include_template('notifications/new-post.php', [
                 'author' => $user_data['login'],
                 'post_id' => $post_id,
                 'recipient' => $recipient,
                 'profile_id' => $profile_id,
                 'post_title' => $db_post['title']
             ]);
+            $notification = include_template('notifications/notification-layout.php', [
+                'notification_content' => $notification_content
+            ]);
             $message = (new Swift_Message("Новая публикация от пользователя"))
                 ->setFrom(['keks@phpdemo.ru' => 'readme'])
                 ->setTo([$recipient['email'] => $recipient['name']])
-                ->setBody($message_layout, 'text/html');
+                ->setBody($notification, 'text/html');
             $result = $mailer->send($message);
         }
 
