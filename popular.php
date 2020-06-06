@@ -20,11 +20,15 @@ if (!empty($_GET)) {
 
 $sorting_parameters = [];
 // защищяемся от инъекций
-$sorting_parameters['sort_value'] = mysqli_real_escape_string($link, $_COOKIE['sort_value']) ?? 'views';
-$sorting_parameters['sorting'] =  mysqli_real_escape_string($link, $_COOKIE['sorting']) ?? 'DESC';
-$sorting_parameters['type'] = mysqli_real_escape_string($link, $_COOKIE['type']) ?? 'all';
+$sorting_parameters['sort_value'] = $_COOKIE['sort_value'] ?? 'views';
+$sorting_parameters['sorting'] = $_COOKIE['sorting'] ?? 'DESC';
+$sorting_parameters['type'] = $_COOKIE['type'] ?? 'all';
 
-$current_page = (int) $_COOKIE['current_page'] ?? 1;
+$current_page = $_COOKIE['current_page'] ?? 1;
+
+foreach ($sorting_parameters as $key => $parametr) {
+    $sorting_parameters[$key] = mysqli_real_escape_string($link, $sorting_parameters[$key]);
+}
 
 $page_items = 6;
 
@@ -36,7 +40,7 @@ if ($sorting_parameters['type'] !== 'all') {
 
 $pages_count = ceil($posts_count / $page_items);
 
-$offset = ($current_page - 1) * $page_items;
+$offset = ((int) $current_page - 1) * $page_items;
 
 if ((int) $posts_count <= 9 && (int) $posts_count > 0) {
     $offset = 0;

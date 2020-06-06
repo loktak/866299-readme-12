@@ -1,6 +1,7 @@
 <?php
 require_once('init.php');
 require_once('validation.php');
+
 list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
 if (!isset($_SESSION['user'])) {

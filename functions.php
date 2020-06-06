@@ -88,37 +88,37 @@ function anti_xss($user_content)
  *The function determines how much time has passed since the post was created and outputs the corresponding value
  *
  * @param Datetime $post_upload_time
+ * @param string $ago_text
+ * 
  * @return string
- * @author Arseny Spirin <spirinars@ya.ru>
  */
 
-function time_ago($post_upload_time, $ago_text =" назад")
+function time_ago($post_upload_time, $ago_text = " назад")
 {
-    $current_time = new DateTime('now');
-    $interval = $post_upload_time->diff($current_time);
+    $interval = $post_upload_time->diff(new DateTime('now'));
 
-    $months = $interval->format('%m');
-    $days = $interval->format('%d');
-    $hours = $interval->format('%H');
-    $minutes = $interval->format('%i');
-    $years = $interval->format('%Y');
+    $months = (int) $interval->format('%m');
+    $days = (int) $interval->format('%d');
+    $hours = (int) $interval->format('%H');
+    $minutes = (int) $interval->format('%i');
+    $years = (int) $interval->format('%Y');
     $ago = 0;
 
-    if ($years != 0) {
+    if ($years !== 0) {
         $years = floor($years);
         $ago = $years . ' ' . plural_form($years, array('год', 'года', 'лет')) . $ago_text;
-    } elseif ($months != 0) {
+    } elseif ($months !== 0) {
         $months = floor($months);
         $ago = $months . ' ' . plural_form($months, array('месец', 'месеца', 'месецев')) . $ago_text;
     } elseif ($days > 7 && $days < 35) {
         $week = floor($days / 7);
         $ago = $week . ' ' . plural_form($week, array('неделю', 'недели', 'недель')) . $ago_text;
-    } elseif ($days != 0) {
+    } elseif ($days !== 0) {
         $ago = $days . ' ' . plural_form($days, array('день', 'дня', 'дней')) . $ago_text;
-    } elseif ($hours != 0) {
+    } elseif ($hours !== 0) {
         $hours = floor($hours);
         $ago = $hours . ' ' . plural_form($hours, array('час', 'часа', 'часов')) . $ago_text;
-    } elseif ($minutes != 0) {
+    } elseif ($minutes !== 0) {
         $ago = $minutes . ' ' . plural_form($minutes, array('минуту', 'минуты', 'минут')) . $ago_text;
     } else {
         $ago = 'меньше минуты назад';
@@ -129,15 +129,14 @@ function time_ago($post_upload_time, $ago_text =" назад")
 
 /** 
  *The function declines the existing ones in accordance with the numerals
- *
  * @param int $n
  * @param array $forms
+ * 
  * @return string
- * @author Arseny Spirin <spirinars@ya.ru>
  */
 function plural_form($n, $forms)
 {
-    return $n % 10 == 1 && $n % 100 != 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
+    return $n % 10 === 1 && $n % 100 !== 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
 }
 
 
@@ -273,11 +272,15 @@ function get_profile_name_with_br($name)
     return implode('<br>', explode(" ", $name));
 }
 
-
+/**
+ * Функция возвращает дату последнего сообщения в нужном формате
+ * @param Datetime $post_upload_time
+ * 
+ * @return string
+ */
 function last_message_date($post_upload_time)
 {
-    $current_time = new DateTime('now');
-    $interval = $post_upload_time->diff($current_time);
+    $interval = $post_upload_time->diff(new DateTime('now'));
 
     $month_name = [
         '01' => 'Янв',
@@ -292,18 +295,18 @@ function last_message_date($post_upload_time)
         '10' => 'Окт',
         '11' => 'Нояб',
         '12' => 'Дек'
-       ];
-    
-       $months = $interval->format('%m');
-       $days = $interval->format('%d');
+    ];
 
-       $years = $interval->format('%Y');
+    $months = (int) $interval->format('%m');
+    $days = (int) $interval->format('%d');
 
-    if ($years != 0) {
+    $years = (int) $interval->format('%Y');
+
+    if ($years !== 0) {
         return $post_upload_time->format('Y г');
-    } elseif ($days != 0 || $months != 0) {
+    } elseif ($days !== 0 || $months !== 0) {
         $month = $post_upload_time->format('m');
-        return $post_upload_time->format('d ' . $month_name[$month]);
-    } 
-    return  $post_upload_time->format('h:i');
+        return $post_upload_time->format("d {$month_name[$month]}");
+    }
+    return  $post_upload_time->format('H:i');
 }
