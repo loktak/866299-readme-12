@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // если ошибок нет создаем sql запрос на добавление нового юзера. и переходим на главную страницу
     if (empty($errors)) {
-        $file_name = $file['picture']['name'] ?? 'default.jpg';
+        $file_name = $file['picture']['name'] ?? 'userpic.jpg';
         $sql = 'INSERT INTO users (email, login, password, avatar) VALUES (?, ?, ?, ?)';
         $user = [
             'email' => $registration_data['email'],
