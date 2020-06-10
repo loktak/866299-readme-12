@@ -4,6 +4,8 @@ require_once('validation.php');
 require_once('mail_settings.php');
 list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
 
+
+// проверяем залогинен ли пользователь, если нет, то перенаправляем на главную
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
 }
@@ -31,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return check_tags($_POST['tags']);
         }
     ];
-    switch ($posts['form-type']) {  //определяем список полей для проверки на пустое не пустое и правила для проверки полей, которые в этом нуждаются
+    //определяем список полей для проверки на пустое не пустое и правила для проверки полей, которые в этом нуждаются
+    switch ($posts['form-type']) {  
         case 'photo':
             if (empty($_FILES['picture']['name'])) {
                 $required_fields[] = 'photo-url';
@@ -189,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$page_parameters['name'] = get_russian_form_name($page_parameters['form-type']); //названия для формы формы
+$page_parameters['name'] = get_russian_form_name($page_parameters['form-type']); //названия для формы
 
 $content = include_template("add-post/add-" . $page_parameters['form-type'] . "-post.php", [
     'errors' => $errors

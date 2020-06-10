@@ -139,17 +139,6 @@ function plural_form($n, $forms)
     return $n % 10 === 1 && $n % 100 !== 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
 }
 
-
-/** 
- * Генерирует случаную дату для поста
- */
-function get_post_time($index)
-{
-    $random_date = generate_random_date($index);
-    $post_date = new DateTime($random_date);
-    return $post_date;
-}
-
 /**
  * Подключаемся к базе данных и проверяем есть подключение или нет.
  * @param string $host     Наименование локального хоста.

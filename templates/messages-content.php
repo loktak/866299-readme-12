@@ -7,7 +7,7 @@
                 <li class="messages__contacts-item">
                     <a class="messages__contacts-tab tabs__item <?= ((int) $receiver_id === (int) $interlocutor['receiver_id'] || (int) $receiver_id === (int) $interlocutor['sender_id']) ? 'messages__contacts-tab--active' : "" ?> " href="messages.php?receiver_id=<?= ((int) $interlocutor['sender_id'] === (int) $user_data['id']) ? $interlocutor['receiver_id'] : $interlocutor['sender_id'] ?>#message_anchor">
                         <div class="messages__avatar-wrapper">
-                            <img class="messages__avatar" src="userpics/<?= ((int) $interlocutor['sender_id'] === (int) $user_data['id']) ? $interlocutor['receiver_avatar'] : $interlocutor['sender_avatar'] ?>" alt="Аватар пользователя">
+                            <img class="messages__avatar" style="width:100px" src="userpics/<?= ((int) $interlocutor['sender_id'] === (int) $user_data['id']) ? $interlocutor['receiver_avatar'] : $interlocutor['sender_avatar'] ?>" alt="Аватар пользователя">
                             <?= ((int) $interlocutor['new_messages'] > 0) ? '<i class="messages__indicator">' . $interlocutor['new_messages'] . '</i>' : "" ?>
                         </div>
                         <div class="messages__info">
