@@ -23,7 +23,7 @@ $sorting_parameters['sort_value'] = $_COOKIE['sort_value'] ?? 'views';
 $sorting_parameters['sorting'] = $_COOKIE['sorting'] ?? 'DESC';
 $sorting_parameters['type'] = $_COOKIE['type'] ?? 'all';
 
-$current_page = (int)$_COOKIE['current_page'] ?? 1;
+$current_page = $_COOKIE['current_page'] ?? 1;
 
 foreach ($sorting_parameters as $key => $parametr) {
     $sorting_parameters[$key] = mysqli_real_escape_string($link, $sorting_parameters[$key]);
