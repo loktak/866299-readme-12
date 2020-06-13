@@ -36,7 +36,7 @@ function db_get_prepare_stmt($link, $sql, $data = [])
     $stmt = mysqli_prepare($link, $sql);
 
     if ($stmt === false) {
-        $errorMsg = 'Не удалось инициализировать подготовленное выражение: ' . mysqli_error($link);
+        $errorMsg = 'Не удалось инициализировать подготовленное выражение: '.mysqli_error($link);
         die($errorMsg);
     }
 
@@ -71,7 +71,7 @@ function db_get_prepare_stmt($link, $sql, $data = [])
         $func(...$values);
 
         if (mysqli_errno($link) > 0) {
-            $errorMsg = 'Не удалось связать подготовленное выражение с параметрами: ' . mysqli_error($link);
+            $errorMsg = 'Не удалось связать подготовленное выражение с параметрами: '.mysqli_error($link);
             die($errorMsg);
         }
     }
@@ -103,7 +103,7 @@ function db_get_prepare_stmt($link, $sql, $data = [])
  */
 function get_noun_plural_form(int $number, string $one, string $two, string $many): string
 {
-    $number = (int) $number;
+    $number = (int)$number;
     $mod10 = $number % 10;
     $mod100 = $number % 100;
 
@@ -137,11 +137,11 @@ function check_youtube_url($youtube_url)
 
     if ($id) {
         $api_data = ['id' => $id, 'part' => 'id,status', 'key' => 'AIzaSyBN-AXBnCPxO3HJfZZdZEHMybVfIgt16PQ'];
-        $url = "https://www.googleapis.com/youtube/v3/videos?" . http_build_query($api_data);
+        $url = "https://www.googleapis.com/youtube/v3/videos?".http_build_query($api_data);
 
         $resp = file_get_contents($url);
 
-        if ($resp && $json = json_decode($resp, true)) {
+        if ($resp && $json === json_decode($resp, true)) {
             $res = $json['pageInfo']['totalResults'] > 0 && $json['items'][0]['status']['privacyStatus'] == 'public';
         }
     }
@@ -160,8 +160,8 @@ function embed_youtube_video($youtube_url)
     $id = extract_youtube_id($youtube_url);
 
     if ($id) {
-        $src = "https://www.youtube.com/embed/" . $id;
-        $res = '<iframe width="760" height="400" allowfullscreen src="' . $src . '" frameborder="0"></iframe>';
+        $src = "https://www.youtube.com/embed/".$id;
+        $res = '<iframe width="760" height="400" allowfullscreen src="'.$src.'" frameborder="0"></iframe>';
     }
 
     return $res;
@@ -179,7 +179,7 @@ function embed_youtube_cover($youtube_url)
 
     if ($id) {
         $src = sprintf("https://img.youtube.com/vi/%s/mqdefault.jpg", $id);
-        $res = '<img alt="youtube cover" width="320" height="120" src="' . $src . '" />';
+        $res = '<img alt="youtube cover" width="320" height="120" src="'.$src.'" />';
     }
 
     return $res;
@@ -196,13 +196,13 @@ function extract_youtube_id($youtube_url)
 
     $parts = parse_url($youtube_url);
     if ($parts) {
-        $parts['path'] = $parts['path'] ?? NULL; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
-        if ($parts['path'] == '/watch') {
-            $parts['query'] = $parts['query'] ?? NULL; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
+        $parts['path'] = $parts['path'] ?? null; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
+        if ($parts['path'] === '/watch') {
+            $parts['query'] = $parts['query'] ?? null; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
             parse_str($parts['query'], $vars);
             $id = $vars['v'] ?? null;
         } else {
-            if ($parts['host'] == 'youtu.be') {
+            if ($parts['host'] === 'youtu.be') {
                 $id = substr($parts['path'], 1);
             }
         }

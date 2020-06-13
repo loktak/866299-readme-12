@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: index.php");
         }
 
-        $errors['input-file'] = 'не удалось зарегистрировать нового пользователя' . mysqli_error($link);
+        $errors['input-file'] = 'не удалось зарегистрировать нового пользователя'.mysqli_error($link);
     }
 }
 

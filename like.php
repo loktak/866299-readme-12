@@ -1,6 +1,6 @@
 <?php
-require_once('init.php');
-require_once('validation.php');
+require_once 'init.php';
+require_once 'validation.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -17,7 +17,7 @@ if (empty($_GET['post_id'])) {
 
 $user_id = $user_data['id'];
 
-$post_id = (int) $_GET['post_id']; //защита от иньекций
+$post_id = (int)$_GET['post_id']; //защита от иньекций
 
 $is_post = is_exists_post($link, $post_id); //проверка на существование такого поста
 

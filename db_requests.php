@@ -4,7 +4,7 @@
  * Функция берет данные из запроса sql и возвращает двумерный массив
  * @param mysqli $link
  * @param string $sql запрос в базу данных
- * 
+ *
  * @return array двумерный массив данных
  */
 function get_data($link, $sql)
@@ -12,9 +12,10 @@ function get_data($link, $sql)
     $result = mysqli_query($link, $sql);
     if (!$result) {
         $error = mysqli_error($link);
-        die("Ошибка MySQL: " . $error);
+        die("Ошибка MySQL: ".$error);
     }
     $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
     return $result;
 }
 
@@ -37,6 +38,7 @@ function popular_posts($link, $sort_value = 'views', $sorting = ' DESC', $page_i
     ORDER BY $sort_value $sorting
     LIMIT $page_items OFFSET $offset
     ";
+
     return get_data($link, $sql);
 }
 
@@ -47,7 +49,7 @@ function popular_posts($link, $sort_value = 'views', $sorting = ' DESC', $page_i
  * @param string $type Выбор типа поста
  * @param string $sort_value Выбор по какому параметру сортировать
  * @param string $sorting сортировка по возрастанию или убыванию
- * 
+ *
  * @return array двумерный массив данных
  */
 function popular_posts_category_sorting($link, $type, $sort_value = 'views', $sorting = ' DESC', $page_items, $offset)
@@ -69,7 +71,7 @@ function popular_posts_category_sorting($link, $type, $sort_value = 'views', $so
  * Функция вызывает список постов от пользователь на которых подписан юзер и сортирует их по дате
  * @param mysqli $link
  * @param int $user_id айди юзера
- * 
+ *
  * @return array двумерный массив данных
  */
 function get_posts_for_feed($link, $user_id)
@@ -93,7 +95,7 @@ function get_posts_for_feed($link, $user_id)
  * @param mysqli $link
  * @param int $user_id айди юзера
  * @param string название категории
- * 
+ *
  * @return array двумерный массив данных
  */
 function get_posts_for_feed_by_category($link, $user_id, $category)
@@ -108,18 +110,20 @@ function get_posts_for_feed_by_category($link, $user_id, $category)
     JOIN content_type ct ON ct.id = p.type_id
     WHERE sub.user_id = $user_id AND ct.icon_type = '$category'
     ORDER BY p.post_date DESC";
+
     return get_data($link, $sql);
 }
 
 /**
  * Функция вызывает список категорий
  * @param mysqli $link
- * 
+ *
  * @return array двумерный массив данных
  */
 function posts_categories($link)
 {
     $sql = 'SELECT * FROM content_type';
+
     return get_data($link, $sql);
 }
 
@@ -127,8 +131,8 @@ function posts_categories($link)
  * Функция вызывает информацию по по посту используя его id.
  * @param mysqli $link
  * @param int $post_id id поста
- * @param int $profile id авторизованного пользователя
- * 
+ * @param int $profile_id id авторизованного пользователя
+ *
  * @return array двумерный массив данных
  */
 function get_post_info($link, $post_id, $profile_id)
@@ -149,14 +153,14 @@ function get_post_info($link, $post_id, $profile_id)
    WHERE p.id = $post_id";
     $result = get_data($link, $sql);
 
-    return empty($result) ? NULL : $result;
+    return empty($result) ? null : $result;
 }
 
 /**
  * Функция вызывает список комментариев к определенному посту
  * @param mysqli $link
  * @param int $post_id айди поста
- * 
+ *
  * @return array двумерный массив данных
  */
 function get_post_comments($link, $post_id)
@@ -176,20 +180,21 @@ function get_post_comments($link, $post_id)
  * Функция вызывает данные поста по id поста.
  * @param mysqli $link
  * @param string $post_id id пользователя
- * 
+ *
  * @return array двумерный массив данных
  */
 function get_post_by_id($link, $post_id)
 {
     $sql = "SELECT p.* FROM posts p WHERE id = $post_id";
+
     return get_data($link, $sql)[0];
 }
 
-/** 
- * Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов 
+/**
+ * Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов
  * @param mysqli $link
  * @param array $tags подготовленный массив с тегами
- * 
+ *
  * @return array массив с данными
  */
 function add_tags_to_db($link, $tags)
@@ -197,28 +202,29 @@ function add_tags_to_db($link, $tags)
     $tag_sql = 'INSERT INTO hashtags (title) VALUES (?)';
     foreach ($tags as $tag) {
         $search_sql = "SELECT h.id FROM hashtags h WHERE h.title = '$tag'";
-        $search_result = get_data($link, $search_sql)[0] ?? NULL;
+        $search_result = get_data($link, $search_sql)[0] ?? null;
         if (!empty($search_result)) {
             $tags_id[] = $search_result['id'];
         } else {
             $values['title'] = $tag;
             $result = mysqli_stmt_execute(db_get_prepare_stmt($link, $tag_sql, $values));
             if (!$result) {
-                return 'не удалось добавить теги' . mysqli_error($link);
+                return 'не удалось добавить теги'.mysqli_error($link);
             }
             $tags_id[] = mysqli_insert_id($link);
         }
     }
+
     return $tags_id;
 }
 
 
-/** 
+/**
  * Добавления поста вместе с тегами
  * @param mysqli $link
  * @param array $tags массив с тегами
  * @param int $post_id айди добавленного поста
- * 
+ *
  * @return boolean $post_id айди поста или ошибку
  */
 function add_tags_to_posts($link, $tags, $post_id)
@@ -230,8 +236,9 @@ function add_tags_to_posts($link, $tags, $post_id)
     }
     $result = mysqli_stmt_execute(mysqli_prepare($link, substr($sql, 0, -1)));
     if (!$result) {
-        return 'ошбика' . mysqli_error($link);
+        return 'ошбика'.mysqli_error($link);
     }
+
     return $result;
 }
 
@@ -239,7 +246,7 @@ function add_tags_to_posts($link, $tags, $post_id)
  * Функция получает данные о пользователе по email'у
  * @param mysqli $link
  * @param string $email адрес почты
- * 
+ *
  * @return array массив с данными о пользователе
  */
 function get_user_data_by_email($link, $email)
@@ -247,7 +254,7 @@ function get_user_data_by_email($link, $email)
     $sql = "SELECT * FROM users u WHERE u.email = '$email'";
     $result = get_data($link, $sql);
 
-    return empty($result) ? NULL : $result[0];
+    return empty($result) ? null : $result[0];
 }
 
 
@@ -255,7 +262,7 @@ function get_user_data_by_email($link, $email)
  * Функция получает список постов в которых есть поисковой запрос и сортирует их по релевантности репосты игнорируются
  * @param mysqli $link
  * @param string $text сам запрос
- * 
+ *
  * @return array массив с данными о пользователе
  */
 function search_text_in_posts($link, $text)
@@ -266,8 +273,8 @@ function search_text_in_posts($link, $text)
     IFNULL ((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments
     FROM posts p
     JOIN users u ON u.id = p.user_id
-    JOIN content_type ct ON ct.id = p.type_id 
-    WHERE MATCH(p.title, p.content_text, p.quote_author) 
+    JOIN content_type ct ON ct.id = p.type_id
+    WHERE MATCH(p.title, p.content_text, p.quote_author)
     AGAINST ('$text*' IN BOOLEAN MODE) AND p.original_id is NULL
     ORDER BY score DESC";
 
@@ -278,7 +285,7 @@ function search_text_in_posts($link, $text)
  * Функция получает список постов у которых есть определенный хэштег и сортирует их по дате добавления репосты игнорируются
  * @param mysqli $link
  * @param string $hashtag хэштег
- * 
+ *
  * @return array массив с данными о пользователе
  */
 function search_hastags_on_posts($link, $hashtag)
@@ -288,7 +295,7 @@ function search_hastags_on_posts($link, $hashtag)
     IFNULL ((SELECT COUNT(*) FROM comments com WHERE com.post_id = p.id), 0) AS comments
     FROM posts p
     JOIN users u ON u.id = p.user_id
-    JOIN content_type ct ON ct.id = p.type_id 
+    JOIN content_type ct ON ct.id = p.type_id
     JOIN hashtags_posts hp ON hp.post_id = p.id
     JOIN hashtags h ON h.id = hp.tag_id
     WHERE h.title LIKE '%$hashtag%' AND p.original_id is NULL
@@ -301,7 +308,7 @@ function search_hastags_on_posts($link, $hashtag)
  * Функция получает список постов одного автора и сортирует их по дате добавления
  * @param mysqli $link
  * @param int $author_id id автора
- * 
+ *
  * @return array массив с данными о пользователе
  */
 function get_posts_by_author_id($link, $author_id)
@@ -327,12 +334,12 @@ function get_posts_by_author_id($link, $author_id)
  * @param mysqli $link
  * @param int $profile_id id пользователя
  * @param int $user_id id залогиненого пользователя
- * 
+ *
  * @return array массив с данными о пользователе
  */
 function get_profile_data($link, $profile_id, $user_id)
 {
-    $sql = "SELECT DISTINCT u.id, u.login, u.avatar, IFNULL(COUNT(p.user_id), 0) AS user_posts, 
+    $sql = "SELECT DISTINCT u.id, u.login, u.avatar, IFNULL(COUNT(p.user_id), 0) AS user_posts,
     u.registration_date,
     IFNULL((SELEct COUNT(*) FROM subscriptions sub WHERE sub.userto_id = u.id), 0) AS user_subs,
     IFNULL((SELEct COUNT(*) FROM subscriptions subs WHERE subs.userto_id = u.id AND subs.user_id = $user_id), 0) AS is_subscribed
@@ -364,7 +371,7 @@ function get_hashtags_for_post($link, $post_id)
 /**
  * Функция получает список тех кто поставил лайки определенному пользователю
  * @param mysqli $link
- * @param int $usert_id id пользователя
+ * @param int $user_id id пользователя
  *
  * @return array массив с данными о пользователе
  */
@@ -385,7 +392,7 @@ function get_user_likes($link, $user_id)
  * Функция получает список тех кто подписан на пользователя и проверяет подписан ли на них активный пользователь
  * @param mysqli $link
  * @param int $profile_id пользователя
- * @param int $usert_id id авторизованного пользователя
+ * @param int $user_id id авторизованного пользователя
  *
  * @return array массив с данными о пользователе
  */
@@ -421,14 +428,15 @@ function get_chat_messages($link, $user_one, $user_two)
     JOIN users u ON u.id = m.user_id
     WHERE m.userto_id = $user_one AND m.user_id = $user_two OR m.userto_id = $user_two AND m.user_id = $user_one
     ORDER BY message_date ASC";
+
     return get_data($link, $sql);
 }
 
 /**
  * Вызывает список юзеров с кем у пользователя есть чат
  * @param mysqli $link
- * @param string $sql запрос в базу данных 
- * 
+ * @param string $sql запрос в базу данных
+ *
  * @return BOOLEAN
  */
 function is_exist($link, $sql)
@@ -436,7 +444,7 @@ function is_exist($link, $sql)
     $result = mysqli_query($link, $sql);
 
     if (!$result) {
-        die('Ошибка MySQL: ' . mysqli_error($link));
+        die('Ошибка MySQL: '.mysqli_error($link));
     }
 
     return mysqli_num_rows($result) > 0;
@@ -447,7 +455,7 @@ function is_exist($link, $sql)
  * @param mysqli $link
  * @param int $user_one id первого пользователя
  * @param int $user_two id второго пользователя
- * 
+ *
  * @return BOOLEAN
  */
 function is_interlocutor_exist($link, $user_one, $user_two)
@@ -463,13 +471,13 @@ function is_interlocutor_exist($link, $user_one, $user_two)
  * Вызывает список юзеров с кем у пользователя есть чат
  * @param mysqli $link
  * @param int $profile_id id первого пользователя
- * 
+ *
  * @return array массив c собеседниками
  */
 function get_interclutors($link, $profile_id)
 {
     $sql = "SELECT i.*, u.login AS sender_name, us.login AS receiver_name, u.avatar AS sender_avatar, us.avatar AS receiver_avatar,
-    (SELECT m.content FROM messages m 
+    (SELECT m.content FROM messages m
     WHERE (m.user_id = i.sender_id AND m.userto_id = i.receiver_id OR m.user_id = i.receiver_id AND m.userto_id = i.sender_id)
     AND m.message_date = i.last_message_date ) AS last_message
     FROM interlocutors i
@@ -485,8 +493,8 @@ function get_interclutors($link, $profile_id)
  * @param mysqli $link
  * @param int $post_id id id поста
  * @param int $user_id id юзера
- * 
- * @return BOOLEAN 
+ *
+ * @return BOOLEAN
  */
 function is_exists_like($link, $post_id, $user_id)
 {
@@ -500,8 +508,8 @@ function is_exists_like($link, $post_id, $user_id)
  * @param mysqli $link
  * @param int $subscriber_id id на кто подписывается
  * @param int $user_id id на кого подписываются
- * 
- * @return BOOLEAN 
+ *
+ * @return BOOLEAN
  */
 function is_exists_subscription($link, $subscriber_id, $user_id)
 {
@@ -514,8 +522,8 @@ function is_exists_subscription($link, $subscriber_id, $user_id)
  * Проверяет существование юзера в БД
  * @param mysqli $link
  * @param int $user_id id юзера
- * 
- * @return BOOLEAN 
+ *
+ * @return BOOLEAN
  */
 function is_exists_user($link, $user_id)
 {
@@ -528,12 +536,12 @@ function is_exists_user($link, $user_id)
  * Проверяет существование поста в БД
  * @param mysqli $link
  * @param int $post_id id юзера
- * 
- * @return BOOLEAN 
+ *
+ * @return BOOLEAN
  */
-function is_exists_post($link, $user_id)
+function is_exists_post($link, $post_id)
 {
-    $sql = "SELECT p.* FROM posts p WHERE p.id = $user_id";
+    $sql = "SELECT p.* FROM posts p WHERE p.id = $post_id";
 
     return is_exist($link, $sql);
 }
@@ -544,17 +552,18 @@ function is_exists_post($link, $user_id)
  * @param mysqli $link
  * @param array $comment_data данные коментария
  * @param int $profile_id id авторизованого пользователя
- * 
- * @return BOOLEAN 
+ *
+ * @return BOOLEAN
  */
 function comment_to_db($link, $comment_data, $profile_id)
 {
     $sql = "INSERT INTO comments (content, user_id, post_id) VALUES (?, ?, ?)";
     $comment_data = [
         'content' => $comment_data['comment'],
-        'user_id' => (int) $profile_id,
-        'post_id' => (int) $comment_data['post_id']
+        'user_id' => (int)$profile_id,
+        'post_id' => (int)$comment_data['post_id'],
     ];
+
     return mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $comment_data));
 }
 
@@ -564,7 +573,7 @@ function comment_to_db($link, $comment_data, $profile_id)
  * @param mysqli $link
  * @param int $profile_id
  * @param string $page
- * 
+ *
  * @return array массив c собеседниками
  */
 function get_recipients($link, $profile_id, $page = 'add')
@@ -573,5 +582,6 @@ function get_recipients($link, $profile_id, $page = 'add')
     if ($page === 'subscription') {
         $sql = "SELECT u.login AS name, u.email FROM users u WHERE u.id = $profile_id";
     }
+
     return get_data($link, $sql);
 }

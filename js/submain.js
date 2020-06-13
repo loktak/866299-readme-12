@@ -46,7 +46,7 @@
 
     var addClickHandle = function (tab, index) {
       tab.addEventListener('click', function (evt) {
-        
+
         goToTab(index);
       });
     };
@@ -139,7 +139,7 @@
       closeButton.focus();
 
       closeButton.addEventListener('click', function (evt) {
-        
+
         closeModal();
       });
 

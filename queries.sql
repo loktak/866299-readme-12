@@ -1,16 +1,16 @@
 USE readme;
-/* 
+/*
 Добавляем пользователей в таблицу с пользователями
 Специально сделано разными строчками, я так учился. Дальше все пошло большими запросами.
 */
-INSERT INTO users 
+INSERT INTO users
     (email, login, password, avatar)
 VALUES
     ('larisa@yahoo.com', 'Лариса', 'qwerty12345', 'userpic-larisa-small.jpg'),
     ('pro100vlad@gmail.com', 'Владик', '01234567890', 'userpic.jpg'),
     ('vitek@yandex.ru', 'Виктор', 'superpass', 'userpic-mark.jpg');
 
-/* 
+/*
 Добавляем типы постов в таблицу с типами постов
 */
 INSERT INTO content_type
@@ -23,7 +23,7 @@ VALUES
     (5, 'Ссылка', 'link');
 
 
-/* 
+/*
 Добавление всех существующих постов в таблицу с постами
 */
 INSERT INTO posts
@@ -53,7 +53,7 @@ VALUES
 INSERT INTO posts
     (title, link, views, user_id, type_id)
 VALUES
-    ('Лучшие курсы', 'www.htmlacademy.ru', 1000000, 2, (SELECT id
+    ('Лучшие курсы', 'https://www.htmlacademy.ru', 1000000, 2, (SELECT id
         FROM content_type
         WHERE type_name = 'Ссылка'));
 
@@ -64,7 +64,7 @@ VALUES
         FROM content_type
         WHERE type_name = 'Видео'));
 
-/* 
+/*
 Добавление комментариев к постам
 */
 INSERT INTO comments
@@ -124,7 +124,7 @@ VALUES
 */
 INSERT INTO hashtags
     (title)
-VALUES 
+VALUES
     ('тестовый');
 
 /*
@@ -132,7 +132,7 @@ VALUES
 */
 INSERT INTO hashtags_posts
     (tag_id, post_id)
-VALUES 
+VALUES
     (1, 1),
     (1, 2),
     (1, 3),

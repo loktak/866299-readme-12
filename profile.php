@@ -1,7 +1,7 @@
 <?php
-require_once('init.php');
-require_once('validation.php');
-list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
+require_once 'init.php';
+require_once 'validation.php';
+list($unread_messages_count, $interlocutors, $profile_id) = require_once 'interlocutors.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -12,9 +12,8 @@ $user_data = $_SESSION['user'];
 $errors = [];
 $hashtags = [];
 
-
 if (isset($_GET['user_id'])) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
-    $id = (int) $_GET['user_id'];
+    $id = (int)$_GET['user_id'];
     $is_user = is_exists_user($link, $id);
     if (!$is_user) {
         header("Location: /profile.php");
@@ -31,11 +30,11 @@ if (!empty($_GET)) {
     }
 }
 
-$active_tab = mysqli_real_escape_string($link, $_COOKIE['active_tab']) ?? 'posts';
+$active_tab = $_COOKIE['active_tab'] ?? 'posts';
 
-$profile_id = (int)$_COOKIE['user_id'] ?? $user_data['id'];
+$profile_id = $_COOKIE['user_id'] ?? $user_data['id'];
 
-$profile_info = get_profile_data($link, $profile_id, $user_data['id']);
+$profile_info = get_profile_data($link, (int)$profile_id, $user_data['id']);
 
 $comments_for_id = $_COOKIE['comments_for'] ?? 0;
 $show_comments = $_GET['show_comments'] ?? null;
@@ -44,7 +43,7 @@ if ($active_tab === 'posts') {
 
     $posts = get_posts_by_author_id($link, $profile_id);
 
-    $comments[$comments_for_id] = get_post_comments($link, $comments_for_id);
+    $comments[$comments_for_id] = get_post_comments($link, (int)$comments_for_id);
     $comments_count = count($comments[$comments_for_id]);
     $hidded_comments_count = null;
     if ($comments_count > 2 && $show_comments !== 'all') {
@@ -76,13 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = array_filter($errors);
 
-   if (empty($errors)) {
+    if (empty($errors)) {
         $is_success = comment_to_db($link, $comment, $profile_id);
         if ($is_success) {
             header("Location: profile.php?user_id={$comment['author_id']}");
             die();
         }
-        $errors['comment'] = 'не удалось добавить комментарий' . mysqli_error($link);
+        $errors['comment'] = 'не удалось добавить комментарий'.mysqli_error($link);
     }
 }
 

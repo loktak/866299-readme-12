@@ -1,7 +1,7 @@
 <?php
-require_once('init.php');
-require_once('validation.php');
-require_once('mail_settings.php');
+require_once 'init.php';
+require_once 'validation.php';
+require_once 'mail_settings.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -18,7 +18,7 @@ if (empty($_GET['user_id']) || $user_data['id'] === $_GET['user_id']) {
 
 $subscriber_id = $user_data['id'];
 
-$user_id = (int) $_GET['user_id'];
+$user_id = (int)$_GET['user_id'];
 
 $is_user = is_exists_user($link, $user_id); //проверка на существование такого юзера
 
@@ -46,7 +46,7 @@ if ($is_succsess) {
             'subscriber_id' => $subscriber_id,
         ]);
         $notification = include_template('notifications/notification-layout.php', [
-            'notification_content' => $notification_content
+            'notification_content' => $notification_content,
         ]);
         $message = (new Swift_Message("У вас новый подписчик"))
             ->setFrom(['keks@phpdemo.ru' => 'readme'])

@@ -1,8 +1,14 @@
 <?php
-
+/**
+ * Подключает шаблон, передает туда данные и возвращает итоговый HTML контент
+ * @param string $name Путь к файлу шаблона относительно папки templates
+ * @param array $data Ассоциативный массив с данными для шаблона
+ *
+ * @return string Итоговый HTML
+ */
 function include_template($name, $data)
 {
-    $name = 'templates/' . $name;
+    $name = 'templates/'.$name;
     $result = '';
 
     if (!file_exists($name)) {
@@ -18,9 +24,8 @@ function include_template($name, $data)
     return $result;
 }
 
-/** 
- *The function cuts the text and adds a link to the full text if required 
-
+/**
+ *The function cuts the text and adds a link to the full text if required
  *The function takes two values: text ($text) and the maximum number of symbols($symbols).
  *1.Splitting the text into separate words and entering them in the $words array
  *   The "strlen" function counts the number of characters in each word and sums them in the variable $text_length
@@ -32,13 +37,10 @@ function include_template($name, $data)
  *5 Entering a condition
  *   If the value of $text_length is greater than $symbols, add a colon at the end of the line and a link from $post_full_text_link to the entire text.
  *   If the value of $text_length is less than $symbols, just print the $post_text variable
-
-
  * @param string $text
- * @param $post_id айди поста для ссылки
+ * @param $post_id
  * @param int $symbols
- * 
- * 
+ *
  * @return string
  * @author Arseny Spirin <spirinars@ya.ru>
  */
@@ -59,21 +61,20 @@ function crop_text($text, $post_id, $symbols = 300)
 
     $text = implode(" ", $cropped_text);
 
-    $post_text = "<p>" . $text . "</p>";
+    $post_text = "<p>".$text."</p>";
 
     if ($text_lenght > $symbols) {
         $text .= "...";
-        $post_full_text_link = '<a class="post-text__more-link" href="post.php?post_id=' . $post_id . '">Читать далее</a>';
-        $post_text = "<p>" . $text . "</p>" . $post_full_text_link;
+        $post_full_text_link = '<a class="post-text__more-link" href="post.php?post_id='.$post_id.'">Читать далее</a>';
+        $post_text = "<p>".$text."</p>".$post_full_text_link;
         print($post_text);
     } else {
         print($post_text);
     }
 }
 
-
-/** 
- *This function replaces special characters with mnemonic characters 
+/**
+ *This function replaces special characters with mnemonic characters
  *
  * @param string $user_content
  * @return string
@@ -84,12 +85,12 @@ function anti_xss($user_content)
     return htmlspecialchars($user_content, ENT_QUOTES);
 }
 
-/** 
+/**
  *The function determines how much time has passed since the post was created and outputs the corresponding value
  *
  * @param Datetime $post_upload_time
  * @param string $ago_text
- * 
+ *
  * @return string
  */
 
@@ -97,29 +98,29 @@ function time_ago($post_upload_time, $ago_text = " назад")
 {
     $interval = $post_upload_time->diff(new DateTime('now'));
 
-    $months = (int) $interval->format('%m');
-    $days = (int) $interval->format('%d');
-    $hours = (int) $interval->format('%H');
-    $minutes = (int) $interval->format('%i');
-    $years = (int) $interval->format('%Y');
+    $months = (int)$interval->format('%m');
+    $days = (int)$interval->format('%d');
+    $hours = (int)$interval->format('%H');
+    $minutes = (int)$interval->format('%i');
+    $years = (int)$interval->format('%Y');
     $ago = 0;
 
     if ($years !== 0) {
         $years = floor($years);
-        $ago = $years . ' ' . plural_form($years, array('год', 'года', 'лет')) . $ago_text;
+        $ago = $years.' '.plural_form($years, array('год', 'года', 'лет')).$ago_text;
     } elseif ($months !== 0) {
         $months = floor($months);
-        $ago = $months . ' ' . plural_form($months, array('месец', 'месеца', 'месецев')) . $ago_text;
+        $ago = $months.' '.plural_form($months, array('месец', 'месеца', 'месецев')).$ago_text;
     } elseif ($days > 7 && $days < 35) {
         $week = floor($days / 7);
-        $ago = $week . ' ' . plural_form($week, array('неделю', 'недели', 'недель')) . $ago_text;
+        $ago = $week.' '.plural_form($week, array('неделю', 'недели', 'недель')).$ago_text;
     } elseif ($days !== 0) {
-        $ago = $days . ' ' . plural_form($days, array('день', 'дня', 'дней')) . $ago_text;
+        $ago = $days.' '.plural_form($days, array('день', 'дня', 'дней')).$ago_text;
     } elseif ($hours !== 0) {
         $hours = floor($hours);
-        $ago = $hours . ' ' . plural_form($hours, array('час', 'часа', 'часов')) . $ago_text;
+        $ago = $hours.' '.plural_form($hours, array('час', 'часа', 'часов')).$ago_text;
     } elseif ($minutes !== 0) {
-        $ago = $minutes . ' ' . plural_form($minutes, array('минуту', 'минуты', 'минут')) . $ago_text;
+        $ago = $minutes.' '.plural_form($minutes, array('минуту', 'минуты', 'минут')).$ago_text;
     } else {
         $ago = 'меньше минуты назад';
     }
@@ -127,11 +128,11 @@ function time_ago($post_upload_time, $ago_text = " назад")
     return $ago;
 }
 
-/** 
+/**
  *The function declines the existing ones in accordance with the numerals
  * @param int $n
  * @param array $forms
- * 
+ *
  * @return string
  */
 function plural_form($n, $forms)
@@ -141,8 +142,8 @@ function plural_form($n, $forms)
 
 /**
  * Подключаемся к базе данных и проверяем есть подключение или нет.
- * @param string $host     Наименование локального хоста.
- * @param string $user     Имя пользователя БД
+ * @param string $host Наименование локального хоста.
+ * @param string $user Имя пользователя БД
  * @param string $password Пароль пользователя БД
  * @param string $database Имя БД
  *
@@ -152,48 +153,30 @@ function database_conecting($host, $user, $password, $database)
 {
     $link = mysqli_connect($host, $user, $password, $database);
     if ($link === false) {
-        die("Ошибка подключения: " . mysqli_connect_error());
+        die("Ошибка подключения: ".mysqli_connect_error());
     }
     mysqli_set_charset($link, "utf8");
+
     return $link;
-}
-
-/**
- * Функция создает url страницы с учетом уже существующих GET запросов
- * @param string $type
- * @param string $sort_value
- * @param string $sorting
- *
- * @return array двумерный массив данных
- */
-function set_url($type, $sort_value, $sorting, $page_url = "popular.php")
-{
-    $params = $_GET;
-
-    $params['type'] = $type;
-    $params['sort_value'] = $sort_value;
-    $params['sorting'] = $sorting;
-    $querry = http_build_query($params);
-    $url = "/" . $page_url . "?" . $querry;
-    return $url;
 }
 
 /**
  * Функция создает значение на основании того есть ли такое значение в POST запросе
  * @param string $name название поля по которому ищем
- * 
+ *
  * @return string значение из POST запроса
  */
 function getPostValue($name)
 {
     $result = $_POST[$name] ?? "";
+
     return anti_xss($result);
 }
 
-/** 
+/**
  * Функция выводит русское название в соответствии со значением английкого
  * @param string $text
- * 
+ *
  * @return string $russian_form_name название на русском
  */
 
@@ -216,20 +199,20 @@ function get_russian_form_name($text)
         case 'quote':
             $russian_form_name = 'цитаты';
     }
+
     return $russian_form_name;
 }
-
 
 /**
  * Функция получает значения тега title из сайта по ссылке
  * @param string $url адрес сайта
- * 
+ *
  * @return string Содержимое тега title из указаного сайта
  */
 function get_link_title($url)
 {
     $site = file_get_contents($url);
-    if (preg_match('/<title>([^<]*)<\/title>/', $site, $matches) == 1) {
+    if (preg_match('/<title>([^<]*)<\/title>/', $site, $matches) === 1) {
         return $matches[1];
     }
 }
@@ -238,7 +221,7 @@ function get_link_title($url)
  * Функция добавляет просмотр к посту
  * @param mysqli $link
  * $param $post_id айди поста в котором надо прибавить просмотр
- * 
+ *
  * @return mysqli ошибку если будет
  */
 function plus_view($link, $post_id)
@@ -246,14 +229,14 @@ function plus_view($link, $post_id)
     $sql = "UPDATE posts SET views=IFNULL(views, 0)+1 WHERE id=$post_id";
     $is_succsess = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql));
     if (!$is_succsess) {
-        return 'ошбика' . mysqli_error($link);
+        return 'ошбика'.mysqli_error($link);
     }
 }
 
 /**
  * Функция проверяет заданное имя и если оно состоит из нескольких слов добавляет <br>
  * @param string $name
- * 
+ *
  * @return string $name_with_br
  */
 function get_profile_name_with_br($name)
@@ -264,7 +247,7 @@ function get_profile_name_with_br($name)
 /**
  * Функция возвращает дату последнего сообщения в нужном формате
  * @param Datetime $post_upload_time
- * 
+ *
  * @return string
  */
 function last_message_date($post_upload_time)
@@ -283,19 +266,21 @@ function last_message_date($post_upload_time)
         '09' => 'Cент',
         '10' => 'Окт',
         '11' => 'Нояб',
-        '12' => 'Дек'
+        '12' => 'Дек',
     ];
 
-    $months = (int) $interval->format('%m');
-    $days = (int) $interval->format('%d');
+    $months = (int)$interval->format('%m');
+    $days = (int)$interval->format('%d');
 
-    $years = (int) $interval->format('%Y');
+    $years = (int)$interval->format('%Y');
 
     if ($years !== 0) {
         return $post_upload_time->format('Y г');
     } elseif ($days !== 0 || $months !== 0) {
         $month = $post_upload_time->format('m');
+
         return $post_upload_time->format("d {$month_name[$month]}");
     }
-    return  $post_upload_time->format('H:i');
+
+    return $post_upload_time->format('H:i');
 }

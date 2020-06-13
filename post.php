@@ -1,7 +1,7 @@
 <?php
-require_once('init.php');
-require_once('validation.php');
-list($unread_messages_count, $interlocutors) = require_once('interlocutors.php');
+require_once 'init.php';
+require_once 'validation.php';
+list($unread_messages_count, $interlocutors) = require_once 'interlocutors.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -17,21 +17,21 @@ if (isset($_GET['post_id'])) {
     $_COOKIE['post_id'] = $_GET['post_id'];
 }
 
-$post_id = (int) $_COOKIE['post_id'] ?? null; //защита от инъекций
+$post_id = (int)$_COOKIE['post_id'] ?? null; //защита от инъекций
 
-if ($post_id === null || empty(get_post_info($link, $post_id, $profile_id))) { // если нет гет запроса или нет такого поста показываем страницу 404
+if ($post_id === null || empty(get_post_info($link, $post_id,
+        $profile_id))) { // если нет гет запроса или нет такого поста показываем страницу 404
     $page_content = include_template('post/post404.php', []);
     $layout_content = include_template('layout.php', [
         'content' => $page_content,
         'title' => 'Readme Публикация не найдена',
         'user_data' => $user_data,
-        'unread_messages_count' => $unread_messages_count
+        'unread_messages_count' => $unread_messages_count,
     ]);
     die(print($layout_content));
 }
 
 $post_info = current(get_post_info($link, $post_id, $profile_id)); // ищем пост в БД
-
 
 plus_view($link, $post_info['id']); //добавляем просмотр
 
@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: profile.php?user_id={$comment['author_id']}");
             die();
         }
-        $errors['comment'] = 'не удалось добавить комментарий' . mysqli_error($link);
+        $errors['comment'] = 'не удалось добавить комментарий'.mysqli_error($link);
     }
 }
 
@@ -113,7 +113,7 @@ $layout_content = include_template('layout.php', [
     'title' => 'Readme Публикация',
     'user_data' => $user_data,
     'unread_messages_count' => $unread_messages_count,
-    'active_page' => 'post'
+    'active_page' => 'post',
 ]);
 
 print($layout_content);

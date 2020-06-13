@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         },
         'password' => function () {
             return validate_lenght($_POST['password'], 6);
-        }
+        },
     ];
 
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = array_filter($errors);
 
     if (empty($errors)) {
-        $user_data = get_user_data_by_email($link, $form['email']);
+        $user_data = get_user_data_by_email($link, mysqli_real_escape_string($link, $form['email']));
         if (empty($user_data)) {
             $errors['email'] = "Вы ввели неверный email/пароль";
         }
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 $layout_content = include_template('index.php', [
-    'errors' => $errors
+    'errors' => $errors,
 ]);
 
 print($layout_content);

@@ -1,10 +1,10 @@
 {
-    "name": "spiri/866299-readme-12",
-    "authors": [
-        {
-            "name": "loktak",
-            "email": "spirinars@ya.ru"
-        }
-    ],
-    "require": {}
+  "name": "spiri/866299-readme-12",
+  "authors": [
+    {
+      "name": "loktak",
+      "email": "spirinars@ya.ru"
+    }
+  ],
+  "require": {}
 }

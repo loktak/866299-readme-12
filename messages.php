@@ -1,7 +1,7 @@
 <?php
-require_once('init.php');
-require_once('validation.php');
-list($unread_messages_count, $interlocutors, $profile_id) = require_once('interlocutors.php');
+require_once 'init.php';
+require_once 'validation.php';
+list($unread_messages_count, $interlocutors, $profile_id) = require_once 'interlocutors.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: /index.php");
@@ -9,15 +9,13 @@ if (!isset($_SESSION['user'])) {
 
 $user_data = $_SESSION['user'];
 
-
 $errors = [];
 
 $profile_id = $user_data['id'];
 
-
 if (!empty($_GET['receiver_id'])) { // если не пустой гет запрос, проверяем, что есть такая связь в таблице контактов, если нет, то создаем ее
-    $receiver_id = (int) $_GET['receiver_id'];
-    if (! is_interlocutor_exist($link, $profile_id, $receiver_id)) {
+    $receiver_id = (int)$_GET['receiver_id'];
+    if (!is_interlocutor_exist($link, $profile_id, $receiver_id)) {
         $is_user = is_exists_user($link, $receiver_id);
         if (!$is_user) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
             header("Location: /messages.php");
@@ -40,7 +38,8 @@ if ($receiver_id !== 0) {
     $_COOKIE[$cookie] = $date;
 }
 
-$messages = get_chat_messages($link, $profile_id, $receiver_id); //получаем список сообщений между авторизованным пользователем  и собеседником
+$messages = get_chat_messages($link, $profile_id,
+    $receiver_id); //получаем список сообщений между авторизованным пользователем  и собеседником
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост запрос, то проводим валидацию
     $message = [];
@@ -51,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост �
     $rules = [
         'message' => function () use ($message) {
             return validate_lenght($message['message'], 2, 100);
-        }
+        },
     ];
     $errors = check_required_fields($required_fields);
     $errors = check_rules($rules, $errors, $message);
@@ -61,11 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост �
     if (empty($errors)) { // если ошибок валидации нет, то при помощи транзакции, добавляем сообщение в сущность сообщения и меняем отправителя на авторизованного пользователя, получателя на собеседника и дату на сейчас
         $message_content = mysqli_real_escape_string($link, $message['message']);
 
-        $receiver_id = (int) $message['receiver_id'];
+        $receiver_id = (int)$message['receiver_id'];
 
         $sql_for_messages = "INSERT INTO messages (content, user_id, userto_id) VALUES ('$message_content', $profile_id, $receiver_id)";
 
-        $sql_for_interlocutors = "UPDATE interlocutors SET sender_id = $profile_id, receiver_id = $receiver_id, last_message_date = CURRENT_TIMESTAMP 
+        $sql_for_interlocutors = "UPDATE interlocutors SET sender_id = $profile_id, receiver_id = $receiver_id, last_message_date = CURRENT_TIMESTAMP
         WHERE sender_id = $profile_id AND receiver_id = $receiver_id OR sender_id = $receiver_id AND receiver_id = $profile_id";
 
         mysqli_query($link, "START TRANSACTION");
@@ -87,8 +86,8 @@ if (empty($messages)) { // если сообщений нет, выводим п
 } else {
     $chat_content = include_template('messages/chat-messages.php', [
         'messages' => $messages,
-        'user_data' => $user_data
-    ]); 
+        'user_data' => $user_data,
+    ]);
 }
 
 $page_content = include_template('messages-content.php', [
@@ -96,7 +95,7 @@ $page_content = include_template('messages-content.php', [
     'user_data' => $user_data,
     'receiver_id' => $receiver_id,
     'chat_content' => $chat_content,
-    'errors' => $errors
+    'errors' => $errors,
 ]);
 
 $layout_content = include_template('layout.php', [
@@ -104,7 +103,7 @@ $layout_content = include_template('layout.php', [
     'title' => 'Readme: Мои сообщения',
     'user_data' => $user_data,
     'unread_messages_count' => $unread_messages_count,
-    'active_page' => 'messages'
+    'active_page' => 'messages',
 ]);
 
 print($layout_content);

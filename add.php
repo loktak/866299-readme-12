@@ -29,12 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'heading' => function () {
             return validate_lenght($_POST['heading']);
         },
-        'tags' => function () {
-            return check_tags($_POST['tags']);
-        }
     ];
     //определяем список полей для проверки на пустое не пустое и правила для проверки полей, которые в этом нуждаются
-    switch ($posts['form-type']) {  
+    switch ($posts['form-type']) {
         case 'photo':
             if (empty($_FILES['picture']['name'])) {
                 $required_fields[] = 'photo-url';
@@ -43,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     [
                         'photo-url' => function () {
                             return check_url($_POST['photo-url']);
-                        }
+                        },
                     ]
                 );
             }
@@ -55,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [
                     'video-url' => function () {
                         return check_url($_POST['video-url']);
-                    }
+                    },
                 ]
             );
             break;
@@ -66,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [
                     'post-text' => function () {
                         return validate_lenght($_POST['post-text'], 50, 1000);
-                    }
+                    },
                 ]
             );
             break;
@@ -77,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [
                     'cite-text' => function () {
                         return validate_lenght($_POST['cite-text'], 10, 75);
-                    }
+                    },
                 ]
             );
             break;
@@ -88,17 +85,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [
                     'post-link' => function () {
                         return check_url($_POST['post-link']);
-                    }
+                    },
                 ]
             );
     }
-    $required_fields[] = 'tags'; //сделано специально, что бы ошибка о незаполнености тегов была в самом низу. Для удобства читаемости
 
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
 
+    if (!empty($posts['tags'])) {
+        $rules = array_merge($rules,
+            [
+                'tags' => function () {
+                    return check_tags($_POST['tags']);
+                },
+            ]
+        );
+    }
+
     $errors = check_rules($rules, $errors, $posts); // проверка на rules
-
-
 
     if ($_POST['form-type'] === 'video' && empty($errors['video-url'])) {  // если иных ошибок не найдено проверяем что ссылка ведет на youtube
         $errors['video-url'] = check_youtube_link($_POST['video-url']);
@@ -107,8 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty(array_filter($errors))) {
         if (!empty($_FILES['picture']['name'])) {  //определяем каким способом был загружен файл если с помощью формы то выполняем одну функцию если нет то смотрим по ссылке
             $errors['input-file'] = upload_post_picture($files);
-        } else if (isset($_POST['photo-url'])) {
-            $errors['photo-url'] = get_img_by_link($_POST['photo-url']);
+        } else {
+            if (isset($_POST['photo-url'])) {
+                $errors['photo-url'] = get_img_by_link($_POST['photo-url']);
+            }
         }
     }
 
@@ -152,34 +158,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sql = "INSERT INTO posts (title, $column, user_id, type_id) VALUES (?, ?, ?, $user_id, $type_id)";
         }
 
-        $tags = tags_to_array($posts['tags']); //делаем из строки с тегами массив без повторяющихся тегов
-
         mysqli_query($link, "START TRANSACTION");
 
         $is_r1 = mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $db_post));
 
         $post_id = mysqli_insert_id($link);
 
-        $is_r2 = add_tags_to_posts($link, $tags, $post_id);
+        if (!empty($posts['tags'])) {
+            $tags = tags_to_array(mysqli_escape_string($link,
+                $posts['tags'])); //делаем из строки с тегами массив без повторяющихся тегов
+            $is_r2 = add_tags_to_posts($link, $tags, $post_id);
+        } else {
+            $is_r2 = true;
+        }
 
         if (!$is_r1 && !$is_r2) { // если хотя бы один запрос не выполнен откатываем.
             mysqli_query($link, "ROLLBACK");
-            die('не получилось добавить пост' . mysqli_error($link));
+            die('не получилось добавить пост'.mysqli_error($link));
         }
         mysqli_query($link, "COMMIT");
 
         $recipients = get_recipients($link, $profile_id);
-       
+
         foreach ($recipients as $recipient) {
             $notification_content = include_template('notifications/new-post.php', [
                 'author' => $user_data['login'],
                 'post_id' => $post_id,
                 'recipient' => $recipient,
                 'profile_id' => $profile_id,
-                'post_title' => $db_post['title']
+                'post_title' => $db_post['title'],
             ]);
             $notification = include_template('notifications/notification-layout.php', [
-                'notification_content' => $notification_content
+                'notification_content' => $notification_content,
             ]);
             $message = (new Swift_Message("Новая публикация от пользователя"))
                 ->setFrom(['keks@phpdemo.ru' => 'readme'])
@@ -188,21 +198,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $mailer->send($message);
         }
 
-        header("Location: post.php?post_id=" . $post_id);
+        header("Location: post.php?post_id=".$post_id);
     }
 }
 
 $page_parameters['name'] = get_russian_form_name($page_parameters['form-type']); //названия для формы
 
-$content = include_template("add-post/add-" . $page_parameters['form-type'] . "-post.php", [
-    'errors' => $errors
+$content = include_template("add-post/add-".$page_parameters['form-type']."-post.php", [
+    'errors' => $errors,
 ]);
 
 $page_content = include_template('add-post.php', [
     'content' => $content,
     'types' => posts_categories($link),
     'page_parameters' => $page_parameters,
-    'errors' => $errors
+    'errors' => $errors,
 ]);
 
 $layout_content = include_template('layout.php', [
@@ -210,7 +220,7 @@ $layout_content = include_template('layout.php', [
     'title' => 'Readme: Добавить пост',
     'user_data' => $user_data,
     'active_page' => 'add',
-    'unread_messages_count' => $unread_messages_count
+    'unread_messages_count' => $unread_messages_count,
 ]);
 
 print($layout_content);
