@@ -1,6 +1,7 @@
 <ul class="messages__list tabs__content tabs__content--active">
-    <?php foreach ($messages as $message): ?>
-        <li class="messages__item <?= ((int)$message['sender_id'] === (int)$user_data['id']) ? 'messages__item--my' : "" ?>">
+    <?php foreach ($messages as $message) : ?>
+        <li class="messages__item <?= ((int)$message['sender_id'] === (int)$user_data['id']) ?
+        'messages__item--my' : "" ?>">
             <div class="messages__info-wrapper">
                 <div class="messages__item-avatar">
                     <a class="messages__author-link"

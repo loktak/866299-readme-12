@@ -6,7 +6,7 @@
         <h2 class="visually-hidden">Лента</h2>
         <div class="feed__main-wrapper">
             <div class="feed__wrapper">
-                <?php foreach ($posts as $post): ?>
+                <?php foreach ($posts as $post) : ?>
                     <article class="feed__post post post-<?= $post['type'] ?>">
                         <header class="post__header post__author">
                             <a class="post__author-link"
@@ -22,35 +22,35 @@
                             </a>
                         </header>
                         <div class="post__main">
-                            <?php if ($post['type'] === 'photo' || $post['type'] === 'text'): ?>
+                            <?php if ($post['type'] === 'photo' || $post['type'] === 'text') : ?>
                                 <h2><a href="post.php?post_id=<?= $post['id'] ?>"><?= anti_xss($post['title']) ?></a>
                                 </h2>
                             <?php endif ?>
-                            <?php if ($post['type'] === 'photo'): ?>
+                            <?php if ($post['type'] === 'photo') : ?>
                                 <div class="post-photo__image-wrapper">
                                     <img src="uploads/<?= anti_xss($post['img']) ?>" alt="Фото от пользователя"
                                          width="760" height="396">
                                 </div>
-                            <?php elseif ($post['type'] === 'video'): ?>
+                            <?php elseif ($post['type'] === 'video') : ?>
                             <div class="post-video__block">
                                 <div class="post-video__preview">
                                     <?= embed_youtube_video(anti_xss($post['video'])); ?>
                                 </div>
-                                <?php elseif ($post['type'] === 'text'): ?>
+                            <?php elseif ($post['type'] === 'text') : ?>
                                     <?= crop_text(anti_xss($post['content_text']), $post['id']) ?>
-                                <?php elseif ($post['type'] === 'quote'): ?>
+                            <?php elseif ($post['type'] === 'quote') : ?>
                                     <blockquote>
                                         <p><?= anti_xss($post['content_text']) ?></p>
                                         <cite><?= anti_xss($post['quote_author']) ?></cite>
                                     </blockquote>
-                                <?php elseif ($post['type'] === 'link'): ?>
+                            <?php elseif ($post['type'] === 'link') : ?>
                                     <div class="post-link__wrapper">
                                         <a class="post-link__external" href="<?= anti_xss($post['link']) ?>"
                                            target="_blank" title="Перейти по ссылке">
                                             <div class="post-link__icon-wrapper">
-                                                <img
-                                                    src="https://www.google.com/s2/favicons?domain=<?= anti_xss($post['link']) ?>"
-                                                    alt="Иконка">
+                                                <img src="https://www.google.com/s2/favicons?domain=
+                                                <?= anti_xss($post['link']) ?>" 
+                                                alt="Иконка">
                                             </div>
                                             <div class="post-link__info">
                                                 <h3><?= anti_xss($post['title']) ?></h3>
@@ -62,7 +62,7 @@
                                             </svg>
                                         </a>
                                     </div>
-                                <?php endif ?>
+                            <?php endif ?>
                             </div>
                             <footer class="post__footer post__indicators">
                                 <div class="post__buttons">
@@ -96,9 +96,11 @@
                                     </a>
                                 </div>
                                 <ul class="post__tags">
-                                    <?php foreach ($hashtags[$post['id']] as $key => $value): ?>
+                                    <?php foreach ($hashtags[$post['id']] as $key => $value) : ?>
                                         <li>
-                                            <a href="search.php?search_request=%23<?= $value['title'] ?>">#<?= $value['title'] ?></a>
+                                            <a href="search.php?search_request=%23<?= $value['title'] ?>">
+                                                #<?= $value['title'] ?>
+                                            </a>
                                         </li>
                                     <?php endforeach ?>
                                 </ul>
@@ -114,9 +116,10 @@
                     <span>Все</span>
                 </a>
             </li>
-            <?php foreach ($types as $type): ?>
+            <?php foreach ($types as $type) : ?>
                 <li class="feed__filters-item filters__item">
-                    <a class="filters__button filters__button--<?= ($type['icon_type']) ?> button <?= ($page_parameters['type'] === $type['icon_type']) ? 'filters__button--active' : "" ?>"
+                    <a class="filters__button filters__button--<?= ($type['icon_type']) ?> button 
+                    <?= ($page_parameters['type'] === $type['icon_type']) ? 'filters__button--active' : "" ?>"
                        href="feed.php?type=<?= $type['icon_type'] ?>">
                         <span class="visually-hidden"><?= $type['type_name'] ?></span>
                         <svg class="filters__icon" width="22" height="18">

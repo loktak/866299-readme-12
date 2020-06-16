@@ -142,7 +142,7 @@ function check_youtube_url($youtube_url)
         $resp = file_get_contents($url);
 
         if ($resp && $json === json_decode($resp, true)) {
-            $res = $json['pageInfo']['totalResults'] > 0 && $json['items'][0]['status']['privacyStatus'] == 'public';
+            $res = $json['pageInfo']['totalResults'] > 0 && $json['items'][0]['status']['privacyStatus'] === 'public';
         }
     }
 
@@ -196,9 +196,9 @@ function extract_youtube_id($youtube_url)
 
     $parts = parse_url($youtube_url);
     if ($parts) {
-        $parts['path'] = $parts['path'] ?? null; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
+        $parts['path'] = $parts['path'] ?? null;
         if ($parts['path'] === '/watch') {
-            $parts['query'] = $parts['query'] ?? null; //дополнительная строка что бы убирать варнинги если адрес на youtube был введен не до конца
+            $parts['query'] = $parts['query'] ?? null;
             parse_str($parts['query'], $vars);
             $id = $vars['v'] ?? null;
         } else {

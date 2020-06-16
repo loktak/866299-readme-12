@@ -40,7 +40,6 @@ $comments_for_id = $_COOKIE['comments_for'] ?? 0;
 $show_comments = $_GET['show_comments'] ?? null;
 
 if ($active_tab === 'posts') {
-
     $posts = get_posts_by_author_id($link, $profile_id);
 
     $comments[$comments_for_id] = get_post_comments($link, (int)$comments_for_id);

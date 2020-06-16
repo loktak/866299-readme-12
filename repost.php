@@ -1,5 +1,4 @@
 <?php
-
 require_once 'init.php';
 
 if (!isset($_SESSION['user'])) {
@@ -22,7 +21,12 @@ if (empty($post_info)) {
     die();
 }
 
-if ($post_info['user_id'] === $user_data['id']) { //если пост и так пренадлежит пользователю, то просто показываем ему его пост. так как в тз написано, что репосты чужих постов.
+/**
+ * если пост и так пренадлежит пользователю,
+ * то просто показываем ему его пост.
+ * так как в тз написано, что репосты чужих постов.
+ */
+if ($post_info['user_id'] === $user_data['id']) {
     $path = '/post.php?post_id='.$post_info['id'];
     header("Location: $path");
     die();

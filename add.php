@@ -93,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = check_required_fields($required_fields); //проверка на пустое или нет
 
     if (!empty($posts['tags'])) {
-        $rules = array_merge($rules,
+        $rules = array_merge(
+            $rules,
             [
                 'tags' => function () {
                     return check_tags($_POST['tags']);
@@ -104,12 +105,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $errors = check_rules($rules, $errors, $posts); // проверка на rules
 
-    if ($_POST['form-type'] === 'video' && empty($errors['video-url'])) {  // если иных ошибок не найдено проверяем что ссылка ведет на youtube
+    if ($_POST['form-type'] === 'video' && empty($errors['video-url'])) {
         $errors['video-url'] = check_youtube_link($_POST['video-url']);
     }
 
     if (empty(array_filter($errors))) {
-        if (!empty($_FILES['picture']['name'])) {  //определяем каким способом был загружен файл если с помощью формы то выполняем одну функцию если нет то смотрим по ссылке
+        if (!empty($_FILES['picture']['name'])) {
             $errors['input-file'] = upload_post_picture($files);
         } else {
             if (isset($_POST['photo-url'])) {
@@ -165,8 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $post_id = mysqli_insert_id($link);
 
         if (!empty($posts['tags'])) {
-            $tags = tags_to_array(mysqli_escape_string($link,
-                $posts['tags'])); //делаем из строки с тегами массив без повторяющихся тегов
+            $tags = tags_to_array(mysqli_escape_string(
+                $link,
+                $posts['tags']
+            )); //делаем из строки с тегами массив без повторяющихся тегов
             $is_r2 = add_tags_to_posts($link, $tags, $post_id);
         } else {
             $is_r2 = true;

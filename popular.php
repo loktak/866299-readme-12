@@ -32,8 +32,11 @@ foreach ($sorting_parameters as $key => $parametr) {
 $page_items = 6;
 
 if ($sorting_parameters['type'] !== 'all') {
-    $posts_count = current(get_data($link,
-        "SELECT COUNT(*) as 'count' FROM posts p JOIN content_type ct ON ct.id = p.type_id WHERE ct.icon_type = '".$sorting_parameters['type']."'"))['count'];
+    $posts_count = current(get_data(
+        $link,
+        "SELECT COUNT(*) as 'count' FROM posts p JOIN content_type ct ON ct.id = p.type_id 
+        WHERE ct.icon_type = '".$sorting_parameters['type']."'"
+    ))['count'];
 } else {
     $posts_count = current(get_data($link, 'SELECT COUNT(*) as count FROM posts'))['count'];
 }
@@ -49,11 +52,22 @@ if ((int)$posts_count <= 9 && (int)$posts_count > 0) {
 }
 
 if ($sorting_parameters['type'] !== 'all') {
-    $posts = popular_posts_category_sorting($link, $sorting_parameters['type'], $sorting_parameters['sort_value'],
-        $sorting_parameters['sorting'], $page_items, $offset);
+    $posts = popular_posts_category_sorting(
+        $link,
+        $sorting_parameters['type'],
+        $page_items,
+        $offset,
+        $sorting_parameters['sort_value'],
+        $sorting_parameters['sorting']
+    );
 } else {
-    $posts = popular_posts($link, $sorting_parameters['sort_value'], $sorting_parameters['sorting'], $page_items,
-        $offset);
+    $posts = popular_posts(
+        $link,
+        $page_items,
+        $offset,
+        $sorting_parameters['sort_value'],
+        $sorting_parameters['sorting']
+    );
 }
 
 $popular_posts = include_template('popular/popular-posts.php', [

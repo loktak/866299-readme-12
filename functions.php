@@ -31,11 +31,15 @@ function include_template($name, $data)
  *   The "strlen" function counts the number of characters in each word and sums them in the variable $text_length
  *   Each calculated value is added to the $cropped_text array
  *   The loop stops working if $text_length >= $symbols
- *2.Using the "implode" function, we get the cropped text from the $cropping_text array and write it to the $text variable
- *3.The $post_text variable is responsible for displaying text in HTML code. In it, we know the tags and the actual text itself from the $text variable
- *4.The $post_full_text_link variable is responsible for displaying a link to the full text, if it was cropped. We enter the html code of the link in it
+ *2.Using the "implode" function, we get the cropped text from the $cropping_text array
+ *and write it to the $text variable
+ *3.The $post_text variable is responsible for displaying text in HTML code.
+ *  In it, we know the tags and the actual text itself from the $text variable
+ *4.The $post_full_text_link variable is responsible for displaying a link to the full text,
+ *  if it was cropped. We enter the html code of the link in it
  *5 Entering a condition
- *   If the value of $text_length is greater than $symbols, add a colon at the end of the line and a link from $post_full_text_link to the entire text.
+ *   If the value of $text_length is greater than $symbols,
+ *   add a colon at the end of the line and a link from $post_full_text_link to the entire text.
  *   If the value of $text_length is less than $symbols, just print the $post_text variable
  * @param string $text
  * @param $post_id
@@ -46,14 +50,13 @@ function include_template($name, $data)
  */
 function crop_text($text, $post_id, $symbols = 300)
 {
-
     $words = explode(" ", $text);
 
     $text_lenght = 0;
 
     foreach ($words as $word) {
         $text_lenght = $text_lenght + mb_strlen($word);
-        $cropped_text[] = $word; // изначально я так и писал, но по какой-то причине, выводилось в массиве только последнее слово из всего текста. Вероятно ошибка была где-то еще.
+        $cropped_text[] = $word;
         if ($text_lenght >= $symbols) {
             break;
         }
@@ -137,7 +140,9 @@ function time_ago($post_upload_time, $ago_text = " назад")
  */
 function plural_form($n, $forms)
 {
-    return $n % 10 === 1 && $n % 100 !== 11 ? $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ? $forms[1] : $forms[2]);
+    return $n % 10 === 1 && $n % 100 !== 11 ?
+    $forms[0] : ($n % 10 >= 2 && $n % 10 <= 4 && ($n % 100 < 10 || $n % 100 >= 20) ?
+    $forms[1] : $forms[2]);
 }
 
 /**

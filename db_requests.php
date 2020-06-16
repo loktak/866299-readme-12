@@ -12,7 +12,7 @@ function get_data($link, $sql)
     $result = mysqli_query($link, $sql);
     if (!$result) {
         $error = mysqli_error($link);
-        die("Ошибка MySQL: ".$error);
+        die("Ошибка MySQL: " . $error);
     }
     $result = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
@@ -20,21 +20,23 @@ function get_data($link, $sql)
 }
 
 /**
- * Функция вызывает список постов сортированных по популярности (по умолчанию) с указанием автора поста на главную страницу
+ * Функция вызывает список постов сортированных по популярности (по умолчанию)
+ * с указанием автора поста на главную страницу
  * @param mysqli $link
  * @param string $sort_value Выбор по какому параметру сортировать
  * @param string $sorting сортировка по возрастанию или убыванию
  * @return array двумерный массив данных
  */
-function popular_posts($link, $sort_value = 'views', $sorting = ' DESC', $page_items, $offset)
+function popular_posts($link, $page_items, $offset, $sort_value = 'views', $sorting = ' DESC')
 {
-    $sql = "
-    SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_value
+    $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, 
+    IFNULL(com.comments, 0) AS comments_value
     FROM posts p
     JOIN users u ON p.user_id = u.id
     JOIN content_type ct ON p.type_id = ct.id
     LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
-    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com ON com.post_id = p.id
+    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com 
+    ON com.post_id = p.id
     ORDER BY $sort_value $sorting
     LIMIT $page_items OFFSET $offset
     ";
@@ -52,14 +54,16 @@ function popular_posts($link, $sort_value = 'views', $sorting = ' DESC', $page_i
  *
  * @return array двумерный массив данных
  */
-function popular_posts_category_sorting($link, $type, $sort_value = 'views', $sorting = ' DESC', $page_items, $offset)
+function popular_posts_category_sorting($link, $type, $page_items, $offset, $sort_value = 'views', $sorting = ' DESC')
 {
-    $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, IFNULL(com.comments, 0) AS comments_value
+    $sql = "SELECT p.*, ct.icon_type, u.avatar, u.login AS author_login, IFNULL(l.likes, 0) AS likes, 
+    IFNULL(com.comments, 0) AS comments_value
     FROM posts p
     JOIN users u ON p.user_id = u.id
     JOIN content_type ct ON p.type_id = ct.id
     LEFT JOIN (SELECT l.post_id, COUNT(*) AS likes FROM likes l GROUP BY l.post_id) AS l ON l.post_id = p.id
-    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com ON com.post_id = p.id
+    LEFT JOIN (SELECT com.post_id, COUNT(*) AS comments FROM comments com GROUP BY com.post_id) AS com 
+    ON com.post_id = p.id
     WHERE ct.icon_type = '$type'
     ORDER BY $sort_value $sorting
     LIMIT $page_items OFFSET $offset";
@@ -143,7 +147,8 @@ function get_post_info($link, $post_id, $profile_id)
     IFNULL((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id), 0) AS subscribers,
     IFNULL((SELECT COUNT(*) FROM posts post WHERE post.original_id = p.id), 0) AS reposts,
     post.post_date AS original_date, us.login AS original_author_name, us.avatar AS original_author_avatar,
-    IFNULL ((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id AND sub.user_id = $profile_id ), 0) AS is_subscribed,
+    IFNULL ((SELECT COUNT(*) FROM subscriptions sub WHERE sub.userto_id = p.user_id AND sub.user_id = $profile_id ), 0) 
+    AS is_subscribed,
     IFNULL((SELECT COUNT(*) FROM posts post WHERE post.user_id = p.user_id), 0) AS user_posts
     FROM posts p
     JOIN users u ON p.user_id = u.id
@@ -191,7 +196,8 @@ function get_post_by_id($link, $post_id)
 }
 
 /**
- * Функция принемает массив с тегами и добавляет их в базу данных. Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов
+ * Функция принемает массив с тегами и добавляет их в базу данных.
+ * Если такой тег уже есть то выдает существующий id. функция возвращает массив с id тегов
  * @param mysqli $link
  * @param array $tags подготовленный массив с тегами
  *
@@ -209,7 +215,7 @@ function add_tags_to_db($link, $tags)
             $values['title'] = $tag;
             $result = mysqli_stmt_execute(db_get_prepare_stmt($link, $tag_sql, $values));
             if (!$result) {
-                return 'не удалось добавить теги'.mysqli_error($link);
+                return 'не удалось добавить теги' . mysqli_error($link);
             }
             $tags_id[] = mysqli_insert_id($link);
         }
@@ -236,7 +242,7 @@ function add_tags_to_posts($link, $tags, $post_id)
     }
     $result = mysqli_stmt_execute(mysqli_prepare($link, substr($sql, 0, -1)));
     if (!$result) {
-        return 'ошбика'.mysqli_error($link);
+        return 'ошбика' . mysqli_error($link);
     }
 
     return $result;
@@ -282,7 +288,8 @@ function search_text_in_posts($link, $text)
 }
 
 /**
- * Функция получает список постов у которых есть определенный хэштег и сортирует их по дате добавления репосты игнорируются
+ * Функция получает список постов у которых есть определенный хэштег
+ * и сортирует их по дате добавления репосты игнорируются
  * @param mysqli $link
  * @param string $hashtag хэштег
  *
@@ -342,7 +349,8 @@ function get_profile_data($link, $profile_id, $user_id)
     $sql = "SELECT DISTINCT u.id, u.login, u.avatar, IFNULL(COUNT(p.user_id), 0) AS user_posts,
     u.registration_date,
     IFNULL((SELEct COUNT(*) FROM subscriptions sub WHERE sub.userto_id = u.id), 0) AS user_subs,
-    IFNULL((SELEct COUNT(*) FROM subscriptions subs WHERE subs.userto_id = u.id AND subs.user_id = $user_id), 0) AS is_subscribed
+    IFNULL((SELEct COUNT(*) FROM subscriptions subs WHERE subs.userto_id = u.id AND subs.user_id = $user_id), 0) 
+    AS is_subscribed
     FROM users u
     JOIN posts p ON p.user_id = u.id
     WHERE u.id = $profile_id";
@@ -423,7 +431,8 @@ function get_subscribers($link, $profile_id, $user_id)
  */
 function get_chat_messages($link, $user_one, $user_two)
 {
-    $sql = "SELECT m.message_date AS 'date', m.content, u.avatar AS sender_avatar, u.login AS sender_name, m.user_id AS sender_id
+    $sql = "SELECT m.message_date AS 'date', m.content, u.avatar AS sender_avatar, 
+    u.login AS sender_name, m.user_id AS sender_id
     FROM messages m
     JOIN users u ON u.id = m.user_id
     WHERE m.userto_id = $user_one AND m.user_id = $user_two OR m.userto_id = $user_two AND m.user_id = $user_one
@@ -444,7 +453,7 @@ function is_exist($link, $sql)
     $result = mysqli_query($link, $sql);
 
     if (!$result) {
-        die('Ошибка MySQL: '.mysqli_error($link));
+        die('Ошибка MySQL: ' . mysqli_error($link));
     }
 
     return mysqli_num_rows($result) > 0;
@@ -462,7 +471,8 @@ function is_interlocutor_exist($link, $user_one, $user_two)
 {
     $sql = "SELECT i.*
     FROM interlocutors i
-    WHERE i.sender_id = $user_one AND i.receiver_id = $user_two  OR i.sender_id = $user_two AND i.receiver_id = $user_one";
+    WHERE i.sender_id = $user_one AND i.receiver_id = $user_two  OR i.sender_id = $user_two 
+    AND i.receiver_id = $user_one";
 
     return is_exist($link, $sql);
 }
@@ -476,10 +486,10 @@ function is_interlocutor_exist($link, $user_one, $user_two)
  */
 function get_interclutors($link, $profile_id)
 {
-    $sql = "SELECT i.*, u.login AS sender_name, us.login AS receiver_name, u.avatar AS sender_avatar, us.avatar AS receiver_avatar,
-    (SELECT m.content FROM messages m
-    WHERE (m.user_id = i.sender_id AND m.userto_id = i.receiver_id OR m.user_id = i.receiver_id AND m.userto_id = i.sender_id)
-    AND m.message_date = i.last_message_date ) AS last_message
+    $sql = "SELECT i.*, u.login AS sender_name, us.login AS receiver_name, u.avatar AS sender_avatar, 
+    us.avatar AS receiver_avatar, (SELECT m.content FROM messages m
+    WHERE (m.user_id = i.sender_id AND m.userto_id = i.receiver_id OR m.user_id = i.receiver_id 
+    AND m.userto_id = i.sender_id) AND m.message_date = i.last_message_date ) AS last_message
     FROM interlocutors i
     JOIN users u ON u.id = i.sender_id
     LEFT JOIN users us ON us.id = i.receiver_id
@@ -560,8 +570,8 @@ function comment_to_db($link, $comment_data, $profile_id)
     $sql = "INSERT INTO comments (content, user_id, post_id) VALUES (?, ?, ?)";
     $comment_data = [
         'content' => $comment_data['comment'],
-        'user_id' => (int)$profile_id,
-        'post_id' => (int)$comment_data['post_id'],
+        'user_id' => (int) $profile_id,
+        'post_id' => (int) $comment_data['post_id'],
     ];
 
     return mysqli_stmt_execute(db_get_prepare_stmt($link, $sql, $comment_data));
@@ -578,10 +588,11 @@ function comment_to_db($link, $comment_data, $profile_id)
  */
 function get_recipients($link, $profile_id, $page = 'add')
 {
-    $sql = "SELECT u.login AS name, u.email FROM users u JOIN subscriptions sub ON u.id = sub.user_id WHERE sub.userto_id = $profile_id";
+    $sql = "SELECT u.login AS name, u.email 
+    FROM users u JOIN subscriptions sub ON u.id = sub.user_id 
+    WHERE sub.userto_id = $profile_id";
     if ($page === 'subscription') {
         $sql = "SELECT u.login AS name, u.email FROM users u WHERE u.id = $profile_id";
     }
-
     return get_data($link, $sql);
 }

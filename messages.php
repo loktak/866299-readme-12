@@ -13,8 +13,8 @@ $errors = [];
 
 $profile_id = $user_data['id'];
 
-if (!empty($_GET['receiver_id'])) { // если не пустой гет запрос, проверяем, что есть такая связь в таблице контактов, если нет, то создаем ее
-    $receiver_id = (int)$_GET['receiver_id'];
+if (!empty($_GET['receiver_id'])) {
+    $receiver_id = (int) $_GET['receiver_id'];
     if (!is_interlocutor_exist($link, $profile_id, $receiver_id)) {
         $is_user = is_exists_user($link, $receiver_id);
         if (!$is_user) { // проверяем есть ли такой юзер, если нет то сбрасываем запрос
@@ -38,8 +38,11 @@ if ($receiver_id !== 0) {
     $_COOKIE[$cookie] = $date;
 }
 
-$messages = get_chat_messages($link, $profile_id,
-    $receiver_id); //получаем список сообщений между авторизованным пользователем  и собеседником
+$messages = get_chat_messages(
+    $link,
+    $profile_id,
+    $receiver_id
+); //получаем список сообщений между авторизованным пользователем  и собеседником
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост запрос, то проводим валидацию
     $message = [];
@@ -57,15 +60,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') { // если пришел пост �
 
     $errors = array_filter($errors);
 
-    if (empty($errors)) { // если ошибок валидации нет, то при помощи транзакции, добавляем сообщение в сущность сообщения и меняем отправителя на авторизованного пользователя, получателя на собеседника и дату на сейчас
+    if (empty($errors)) {
         $message_content = mysqli_real_escape_string($link, $message['message']);
 
-        $receiver_id = (int)$message['receiver_id'];
+        $receiver_id = (int) $message['receiver_id'];
 
-        $sql_for_messages = "INSERT INTO messages (content, user_id, userto_id) VALUES ('$message_content', $profile_id, $receiver_id)";
+        $sql_for_messages = "INSERT INTO messages (content, user_id, userto_id) 
+        VALUES ('$message_content', $profile_id, $receiver_id)";
 
-        $sql_for_interlocutors = "UPDATE interlocutors SET sender_id = $profile_id, receiver_id = $receiver_id, last_message_date = CURRENT_TIMESTAMP
-        WHERE sender_id = $profile_id AND receiver_id = $receiver_id OR sender_id = $receiver_id AND receiver_id = $profile_id";
+        $sql_for_interlocutors = "UPDATE interlocutors 
+        SET sender_id = $profile_id, receiver_id = $receiver_id, last_message_date = CURRENT_TIMESTAMP
+        WHERE sender_id = $profile_id AND receiver_id = $receiver_id OR sender_id = $receiver_id 
+        AND receiver_id = $profile_id";
 
         mysqli_query($link, "START TRANSACTION");
 

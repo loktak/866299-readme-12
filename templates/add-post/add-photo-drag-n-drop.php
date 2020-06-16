@@ -1,5 +1,5 @@
 <input type="hidden" name="MAX_FILE_SIZE" value="104857600">
-<? //Это сделано для того что бы не крашился сервер если будет загружен слишком большой файл?>
+<?php //Это сделано для того что бы не крашился сервер если будет загружен слишком большой файл?>
 <div class="adding-post__input-file-container form__input-container form__input-container--file">
     <div class="adding-post__input-file-wrapper form__input-file-wrapper">
         <div class="adding-post__file-zone adding-post__file-zone--photo form__file-zone dropzone">

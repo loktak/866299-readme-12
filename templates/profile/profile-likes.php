@@ -1,11 +1,11 @@
 <section class="profile__likes tabs__content tabs__content--active">
     <h2 class="visually-hidden">Лайки</h2>
     <ul class="profile__likes-list">
-        <?php if (empty($likes)): ?>
+        <?php if (empty($likes)) : ?>
             <P style="font-size:36px;font-weight:bold;">Пользователю не поставили ни одно лайка. Вы можете быть первым
                 =)) Или не быть! Вот в чем вопрос.</P>
         <?php endif ?>
-        <?php foreach ($likes as $like): ?>
+        <?php foreach ($likes as $like) : ?>
             <li class="post-mini post-mini--<?= $like['type'] ?> post user">
                 <div class="post-mini__user-info user__info">
                     <div class="post-mini__avatar user__avatar">
@@ -30,13 +30,13 @@
                 </div>
                 <div class="post-mini__preview">
                     <a class="post-mini__link" href="post.php?post_id=<?= $like['id'] ?>" title="Перейти на публикацию">
-                        <?php if ($like['type'] === 'photo'): ?>
+                        <?php if ($like['type'] === 'photo') : ?>
                             <div class="post-mini__image-wrapper">
                                 <img class="post-mini__image" height="170px" src="uploads/<?= $like['img'] ?>"
                                      alt="Превью публикации">
                             </div>
                             <span class="visually-hidden"><?= $like['type'] ?></span>
-                        <?php elseif ($like['type'] === 'video'): ?>
+                        <?php elseif ($like['type'] === 'video') : ?>
                             <div class="post-mini__image-wrapper">
                                 <?= embed_youtube_cover(anti_xss($like['video'])) ?>
                             </div>
@@ -46,7 +46,7 @@
                                 </svg>
                             </span>
                             <span class="visually-hidden"><?= $like['type'] ?></span>
-                        <?php else: ?>
+                        <?php else : ?>
                             <span class="visually-hidden"><?= $like['type'] ?></span>
                             <svg class="post-mini__preview-icon" width="20" height="21">
                                 <use xlink:href="#icon-filter-<?= $like['type'] ?>"></use>

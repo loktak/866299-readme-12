@@ -15,8 +15,11 @@ $hashtags = [];
 $posts = get_posts_for_feed($link, $user_data['id']);
 
 if (!empty($_GET) && $page_parameters['type'] !== 'all') {
-    $posts = get_posts_for_feed_by_category($link, $user_data['id'],
-        mysqli_real_escape_string($link, $page_parameters['type']));
+    $posts = get_posts_for_feed_by_category(
+        $link,
+        $user_data['id'],
+        mysqli_real_escape_string($link, $page_parameters['type'])
+    );
 }
 
 foreach ($posts as $post) {

@@ -3,23 +3,33 @@
     <h2 class="visually-hidden">Сообщения</h2>
     <div class="messages__contacts">
         <ul class="messages__contacts-list tabs__list">
-            <?php foreach ($interlocutors as $interlocutor): ?>
+            <?php foreach ($interlocutors as $interlocutor) : ?>
                 <li class="messages__contacts-item">
-                    <a class="messages__contacts-tab tabs__item <?= ((int)$receiver_id === (int)$interlocutor['receiver_id'] || (int)$receiver_id === (int)$interlocutor['sender_id']) ? 'messages__contacts-tab--active' : "" ?> "
-                       href="messages.php?receiver_id=<?= ((int)$interlocutor['sender_id'] === (int)$user_data['id']) ? $interlocutor['receiver_id'] : $interlocutor['sender_id'] ?>#message_anchor">
+                    <a class="messages__contacts-tab tabs__item 
+                    <?= ((int)$receiver_id === (int)$interlocutor['receiver_id'] ||
+                    (int)$receiver_id === (int)$interlocutor['sender_id']) ? 'messages__contacts-tab--active' : "" ?> "
+                        href="messages.php?receiver_id=<?= ((int)$interlocutor['sender_id'] === (int)$user_data['id']) ?
+                        $interlocutor['receiver_id'] : $interlocutor['sender_id'] ?>#message_anchor">
                         <div class="messages__avatar-wrapper">
                             <img class="messages__avatar" style="width:100px"
-                                 src="userpics/<?= ((int)$interlocutor['sender_id'] === (int)$user_data['id']) ? anti_xss($interlocutor['receiver_avatar']) : anti_xss($interlocutor['sender_avatar']) ?>"
-                                 alt="Аватар пользователя">
-                            <?= ((int)$interlocutor['new_messages'] > 0) ? '<i class="messages__indicator">'.$interlocutor['new_messages'].'</i>' : "" ?>
+                                    src="userpics/<?= ((int)$interlocutor['sender_id'] === (int)$user_data['id']) ?
+                                    anti_xss($interlocutor['receiver_avatar']) :
+                                    anti_xss($interlocutor['sender_avatar']) ?>"
+                                    alt="Аватар пользователя">
+                            <?= ((int)$interlocutor['new_messages'] > 0) ?
+                            '<i class="messages__indicator">'.$interlocutor['new_messages'].'</i>' : "" ?>
                         </div>
                         <div class="messages__info">
                             <span class="messages__contact-name">
-                                <?= ((int)$interlocutor['sender_id'] === (int)$user_data['id']) ? anti_xss($interlocutor['receiver_name']) : anti_xss($interlocutor['sender_name']) ?>
+                                <?= ((int)$interlocutor['sender_id'] === (int)$user_data['id']) ?
+                                anti_xss($interlocutor['receiver_name']) : anti_xss($interlocutor['sender_name']) ?>
                             </span>
                             <div class="messages__preview">
                                 <p class="messages__preview-text">
-                                    <?= ((int)$interlocutor['sender_id'] === (int)$user_data['id'] && !empty($interlocutor['last_message'])) ? 'Вы: '.anti_xss($interlocutor['last_message']) : anti_xss($interlocutor['last_message']) ?>
+                                    <?= ((int)$interlocutor['sender_id'] === (int)$user_data['id'] &&
+                                    !empty($interlocutor['last_message'])) ?
+                                    'Вы: '.anti_xss($interlocutor['last_message']) :
+                                    anti_xss($interlocutor['last_message']) ?>
                                 </p>
                                 <?php $message_date = new DateTime($interlocutor['last_message_date']) ?>
                                 <time class="messages__preview-time" title="<?= $message_date->format('d.m.Y H:i') ?>"
@@ -43,8 +53,8 @@
                     <img class="comments__picture" src="userpics/<?= $user_data['avatar'] ?> "
                          alt="Аватар пользователя">
                 </div>
-                <div
-                    class="form__input-section <?= (!empty($errors['message']) ? 'form__input-section--error' : "") ?>">
+                <div class="form__input-section 
+                        <?= (!empty($errors['message']) ? 'form__input-section--error' : "") ?>">
                     <textarea class="comments__textarea form__textarea form__input" name="message" id="message"
                               placeholder="Ваше сообщение"><?= getPostValue('message') ?></textarea>
                     <label class="visually-hidden">Ваше сообщение</label>

@@ -19,8 +19,11 @@ if (isset($_GET['post_id'])) {
 
 $post_id = (int)$_COOKIE['post_id'] ?? null; //защита от инъекций
 
-if ($post_id === null || empty(get_post_info($link, $post_id,
-        $profile_id))) { // если нет гет запроса или нет такого поста показываем страницу 404
+if ($post_id === null || empty(get_post_info(
+    $link,
+    $post_id,
+    $profile_id
+))) { // если нет гет запроса или нет такого поста показываем страницу 404
     $page_content = include_template('post/post404.php', []);
     $layout_content = include_template('layout.php', [
         'content' => $page_content,
